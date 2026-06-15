@@ -45,8 +45,7 @@ A full-featured AI-powered cold call roleplay trainer built with React and Claud
 
 ## Built By
 
-Megh Patel & Bhavya Patel — [Waani](https://waani.ai)
+Megh Patel 
 
 ---
 
-*Part of the Waani ecosystem — AI voice agents for sales teams.*
