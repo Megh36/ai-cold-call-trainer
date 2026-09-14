@@ -45,6 +45,14 @@ export default function ProspectWave({ prospects = [], onSelect }) {
     previousTime: typeof performance !== "undefined" ? performance.now() : 0,
   });
 
+  const dragState = useRef({
+    isDragging: false,
+    startX: 0,
+    startY: 0,
+    startPhase: 0,
+    dragged: false,
+  });
+
   const count = prospects.length;
 
   useEffect(() => {
@@ -145,7 +153,18 @@ export default function ProspectWave({ prospects = [], onSelect }) {
     return () => cancelAnimationFrame(rafId);
   }, [count, activeIndex]);
 
-  const handlePointer = (event) => {
+  const handlePointerDown = (event) => {
+    if (!stageRef.current) return;
+    try { event.target.setPointerCapture(event.pointerId); } catch(e){}
+    dragState.current.isDragging = true;
+    dragState.current.dragged = false;
+    dragState.current.startX = event.clientX;
+    dragState.current.startY = event.clientY;
+    dragState.current.startPhase = stateRef.current.basePhase;
+    handlePointerMove(event);
+  };
+
+  const handlePointerMove = (event) => {
     if (!stageRef.current) return;
     const rect = stageRef.current.getBoundingClientRect();
     const nx = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width - 0.5) * 2));
@@ -159,15 +178,34 @@ export default function ProspectWave({ prospects = [], onSelect }) {
     state.active = true;
     state.lastInput = performance.now();
 
-    const axis = state.targetOrientation > 0.5 ? ny : nx;
-    state.targetPhase = state.basePhase + axis * (window.innerWidth < 680 ? 1.55 : 2.45);
+    if (dragState.current.isDragging) {
+      const deltaX = event.clientX - dragState.current.startX;
+      const deltaY = event.clientY - dragState.current.startY;
+      
+      if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+        dragState.current.dragged = true;
+      }
+
+      const dragDistance = state.targetOrientation > 0.5 ? deltaY : deltaX;
+      const phaseDelta = dragDistance / -120;
+      
+      state.basePhase = dragState.current.startPhase + phaseDelta;
+      state.targetPhase = state.basePhase;
+    } else {
+      const axis = state.targetOrientation > 0.5 ? ny : nx;
+      state.targetPhase = Math.round(state.basePhase) + axis * (window.innerWidth < 680 ? 0.8 : 1.5);
+    }
+
     stageRef.current.style.setProperty("--pointer-x", `${((nx + 1) / 2) * 100}%`);
     stageRef.current.style.setProperty("--pointer-y", `${((ny + 1) / 2) * 100}%`);
   };
 
-  const handlePointerLeave = () => {
+  const handlePointerUp = (event) => {
+    dragState.current.isDragging = false;
+    try { event.target.releasePointerCapture(event.pointerId); } catch(e){}
     const state = stateRef.current;
     state.active = false;
+    state.basePhase = Math.round(state.basePhase); 
     state.targetPhase = state.basePhase;
     state.pointerX = 0;
     state.pointerY = 0;
@@ -175,6 +213,11 @@ export default function ProspectWave({ prospects = [], onSelect }) {
       stageRef.current.style.setProperty("--pointer-x", "50%");
       stageRef.current.style.setProperty("--pointer-y", "50%");
     }
+  };
+
+  const handlePointerLeave = () => {
+    if (dragState.current.isDragging) return;
+    handlePointerUp({ target: { releasePointerCapture: () => {} } });
   };
 
   const toggleOrientation = () => {
@@ -241,7 +284,10 @@ export default function ProspectWave({ prospects = [], onSelect }) {
     };
   }, []);
 
-  const selectCard = (index, p) => {
+  const selectCard = (index, p, event) => {
+    if (dragState.current.dragged) {
+      return; // Ignore click if we dragged
+    }
     const state = stateRef.current;
     const current = (Math.round(state.phase) % count + count) % count;
     let delta = index - current;
@@ -251,7 +297,7 @@ export default function ProspectWave({ prospects = [], onSelect }) {
     if (delta === 0) {
       onSelect(p);
     } else {
-      state.basePhase += delta;
+      state.basePhase = Math.round(state.basePhase) + delta;
       state.targetPhase = state.basePhase;
       state.lastInput = performance.now();
     }
@@ -261,8 +307,10 @@ export default function ProspectWave({ prospects = [], onSelect }) {
     <div 
       className="wave-stage" 
       ref={stageRef}
-      onPointerMove={handlePointer}
-      onPointerDown={handlePointer}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
       onPointerLeave={handlePointerLeave}
       onDoubleClick={toggleOrientation}
     >
@@ -276,7 +324,7 @@ export default function ProspectWave({ prospects = [], onSelect }) {
               className="wave-card"
               data-index={i}
               ref={(el) => (cardRefs.current[i] = el)}
-              onClick={() => selectCard(i, p)}
+              onClick={(e) => selectCard(i, p, e)}
               style={{
                 "--card-color": bg,
               }}
