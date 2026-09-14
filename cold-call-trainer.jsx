@@ -259,7 +259,7 @@ const css = `
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .msg{animation:fadeUp .28s ease forwards}
 
-/* Pearl Button Global CSS override for .btn elements */
+/* Pearl Button Global CSS override for .btn elements with increased padding & improved font sizes */
 .btn {
   --radius: 100px;
   outline: none;
@@ -272,15 +272,18 @@ const css = `
   align-items: center;
   justify-content: center;
   font-family: inherit;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 14px 28px;
   user-select: none;
   overflow: hidden;
   box-shadow:
-    inset 0 0.25rem 0.6rem rgba(255, 255, 255, 0.25),
-    inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.8),
-    inset 0 -0.3rem 0.7rem var(--btn-glow, rgba(129, 140, 248, 0.35)),
-    0 0.8rem 1.5rem rgba(0, 0, 0, 0.4),
-    0 0.4rem 0.6rem -0.2rem rgba(0, 0, 0, 0.8);
+    inset 0 0.3rem 0.7rem rgba(255, 255, 255, 0.3),
+    inset 0 -0.15rem 0.35rem rgba(0, 0, 0, 0.85),
+    inset 0 -0.35rem 0.8rem var(--btn-glow, rgba(129, 140, 248, 0.4)),
+    0 1rem 2rem rgba(0, 0, 0, 0.45),
+    0 0.5rem 0.8rem -0.2rem rgba(0, 0, 0, 0.85);
 }
 
 .btn::before {
@@ -291,7 +294,7 @@ const css = `
   bottom: 25%;
   top: -100%;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.14);
+  background-color: rgba(255, 255, 255, 0.16);
   transition: all 0.3s ease;
   pointer-events: none;
 }
@@ -304,10 +307,10 @@ const css = `
   top: 10%;
   bottom: 40%;
   border-radius: 22px 22px 0 0;
-  box-shadow: inset 0 8px 8px -6px rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 10px 10px -6px rgba(255, 255, 255, 0.75);
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.4) 0%,
     rgba(0, 0, 0, 0) 60%,
     rgba(0, 0, 0, 0) 100%
   );
@@ -324,16 +327,16 @@ const css = `
 
 .btn.g {
   background-color: #0d0e15;
-  color: rgba(240, 240, 245, 0.85);
-  --btn-glow: rgba(255, 255, 255, 0.15);
-  --btn-border-glow: rgba(255, 255, 255, 0.15);
+  color: rgba(240, 240, 245, 0.95);
+  --btn-glow: rgba(255, 255, 255, 0.18);
+  --btn-border-glow: rgba(255, 255, 255, 0.18);
 }
 
 .btn.d {
   background-color: #1c0a0a;
   color: #fca5a5;
-  --btn-glow: rgba(239, 68, 68, 0.4);
-  --btn-border-glow: rgba(239, 68, 68, 0.3);
+  --btn-glow: rgba(239, 68, 68, 0.45);
+  --btn-border-glow: rgba(239, 68, 68, 0.35);
 }
 
 .btn:disabled {
@@ -346,11 +349,11 @@ const css = `
 
 .btn:hover:not(:disabled) {
   box-shadow:
-    inset 0 0.3rem 0.6rem rgba(255, 255, 255, 0.45),
-    inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.8),
-    inset 0 -0.4rem 0.9rem var(--btn-glow, rgba(129, 140, 248, 0.5)),
-    0 1.2rem 2rem rgba(0, 0, 0, 0.5),
-    0 0.5rem 0.8rem -0.2rem var(--btn-border-glow, rgba(129, 140, 248, 0.3));
+    inset 0 0.35rem 0.7rem rgba(255, 255, 255, 0.5),
+    inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.85),
+    inset 0 -0.45rem 1rem var(--btn-glow, rgba(129, 140, 248, 0.55)),
+    0 1.4rem 2.2rem rgba(0, 0, 0, 0.55),
+    0 0.6rem 1rem -0.2rem var(--btn-border-glow, rgba(129, 140, 248, 0.35));
   transform: translateY(-2px);
 }
 
@@ -359,7 +362,7 @@ const css = `
 }
 
 .btn:hover:not(:disabled)::after {
-  opacity: 0.55;
+  opacity: 0.6;
   transform: translateY(4%);
 }
 
@@ -376,54 +379,54 @@ const css = `
 .cat-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: 12px;
+  gap: 14px;
   width: 100%;
 }
 @media (min-width: 480px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 768px) { .cat-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; } }
-@media (min-width: 1024px) { .cat-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+@media (min-width: 768px) { .cat-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; } }
+@media (min-width: 1024px) { .cat-grid { grid-template-columns: repeat(4, 1fr); gap: 18px; } }
 
 .prospect-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
 }
-@media (min-width: 768px) { .prospect-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } }
+@media (min-width: 768px) { .prospect-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; } }
 
-.cat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s ease;display:flex;align-items:center;justify-content:space-between}
+.cat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:20px 24px;cursor:pointer;transition:all .2s ease;display:flex;align-items:center;justify-content:space-between}
 .cat-card:hover{background:rgba(255,255,255,.08);border-color:rgba(129,140,248,.35);transform:translateY(-2px)}
-.cat-custom-card{background:rgba(129,140,248,.06);border:1px solid rgba(129,140,248,.2);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s ease;display:flex;align-items:center;justify-content:space-between}
+.cat-custom-card{background:rgba(129,140,248,.06);border:1px solid rgba(129,140,248,.2);border-radius:16px;padding:20px 24px;cursor:pointer;transition:all .2s ease;display:flex;align-items:center;justify-content:space-between}
 .cat-custom-card:hover{background:rgba(129,140,248,.11);border-color:rgba(129,140,248,.38);transform:translateY(-2px)}
-.cat-add{background:rgba(129,140,248,.07);border:1px dashed rgba(129,140,248,.3);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s ease;display:flex;align-items:center;justify-content:space-between}
+.cat-add{background:rgba(129,140,248,.07);border:1px dashed rgba(129,140,248,.3);border-radius:16px;padding:20px 24px;cursor:pointer;transition:all .2s ease;display:flex;align-items:center;justify-content:space-between}
 .cat-add:hover{background:rgba(129,140,248,.12);border-color:rgba(129,140,248,.5)}
 
-.p-row{display:flex;align-items:center;gap:14px;padding:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;cursor:pointer;transition:all .18s ease}
+.p-row{display:flex;align-items:center;gap:16px;padding:18px 20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;cursor:pointer;transition:all .18s ease}
 .p-row:hover{background:rgba(255,255,255,.08);border-color:rgba(129,140,248,.3);transform:translateY(-2px)}
 
-.h-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:12px;cursor:pointer;transition:background .18s ease}
+.h-row{display:flex;align-items:center;gap:14px;padding:16px 20px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:14px;cursor:pointer;transition:background .18s ease}
 .h-row:hover{background:rgba(255,255,255,.065)}
 
-.txin{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#F0F0F5;font-family:inherit;font-size:15px;padding:12px 16px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
-.txin:focus{border-color:rgba(129,140,248,.5);box-shadow:0 0 0 3px rgba(129,140,248,.1)}
-.txin::placeholder{color:rgba(240,240,245,.28)}
+.txin{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;color:#F0F0F5;font-family:inherit;font-size:16px;padding:14px 20px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
+.txin:focus{border-color:rgba(129,140,248,.5);box-shadow:0 0 0 3px rgba(129,140,248,.15)}
+.txin::placeholder{color:rgba(240,240,245,.35)}
 
-.txarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#F0F0F5;font-family:inherit;font-size:14px;padding:12px 16px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;resize:vertical;min-height:80px;line-height:1.6}
-.txarea:focus{border-color:rgba(129,140,248,.5);box-shadow:0 0 0 3px rgba(129,140,248,.1)}
-.txarea::placeholder{color:rgba(240,240,245,.28)}
+.txarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;color:#F0F0F5;font-family:inherit;font-size:15px;padding:14px 20px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;resize:vertical;min-height:90px;line-height:1.6}
+.txarea:focus{border-color:rgba(129,140,248,.5);box-shadow:0 0 0 3px rgba(129,140,248,.15)}
+.txarea::placeholder{color:rgba(240,240,245,.35)}
 
-.bt{background:rgba(255,255,255,.08);border-radius:3px;height:6px;overflow:hidden}
-.bf{height:100%;border-radius:3px;background:linear-gradient(90deg,#818CF8,#A78BFA);transition:width 1s cubic-bezier(.4,0,.2,1)}
+.bt{background:rgba(255,255,255,.08);border-radius:4px;height:7px;overflow:hidden}
+.bf{height:100%;border-radius:4px;background:linear-gradient(90deg,#818CF8,#A78BFA);transition:width 1s cubic-bezier(.4,0,.2,1)}
 
 .fl{display:flex;flex-direction:column;gap:6px}
-.lbl{font-size:12px;color:rgba(240,240,245,.45);letter-spacing:.02em}
-.del-dot{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:#FF3B30;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;border:2.5px solid #050508;transition:transform .15s ease}
+.lbl{font-size:13px;color:rgba(240,240,245,.5);letter-spacing:.02em;font-weight:600}
+.del-dot{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;background:#FF3B30;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;border:2.5px solid #050508;transition:transform .15s ease}
 .del-dot:hover{transform:scale(1.18)}
-.del-minus{color:#fff;font-size:15px;font-weight:800;line-height:1;opacity:0;transition:opacity .12s ease;margin-top:-1px}
+.del-minus{color:#fff;font-size:16px;font-weight:800;line-height:1;opacity:0;transition:opacity .12s ease;margin-top:-1px}
 .del-dot:hover .del-minus{opacity:1}
 
-.sug-box{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:10px 14px;margin-top:6px}
-.live-tip{background:rgba(129,140,248,.08);border:1px solid rgba(129,140,248,.2);border-radius:8px;padding:8px 12px;margin-top:6px;font-size:12px;color:rgba(200,205,255,.85);line-height:1.5}
+.sug-box{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:12px 16px;margin-top:8px}
+.live-tip{background:rgba(129,140,248,.08);border:1px solid rgba(129,140,248,.2);border-radius:10px;padding:10px 14px;margin-top:8px;font-size:13px;color:rgba(200,205,255,.9);line-height:1.55}
 
 .call-wrap {
   height: 100vh;
@@ -435,22 +438,22 @@ const css = `
 
 @media (min-width: 768px) {
   .call-wrap {
-    max-width: 1040px;
+    max-width: 1060px;
     height: 85vh;
-    max-height: 800px;
+    max-height: 820px;
     margin: 30px auto;
     border-radius: 24px;
     border: 1px solid rgba(255,255,255,.09);
     box-shadow: 0 20px 50px rgba(0,0,0,0.6);
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 340px 1fr;
     grid-template-rows: 1fr;
     overflow: hidden;
   }
   .call-sidebar {
     background: rgba(255,255,255,.02);
     border-right: 1px solid rgba(255,255,255,.07);
-    padding: 24px;
+    padding: 28px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -466,14 +469,14 @@ const css = `
 .two-col-layout {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   width: 100%;
 }
 @media (min-width: 768px) {
   .two-col-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 22px;
   }
 }
 
@@ -531,13 +534,13 @@ function ScoreBar({score}) {
 function TopNav({onHistory, onApiKey, hasKey}) {
   return (
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",marginBottom:"28px"}}>
-      <div style={{fontSize:"14px",fontWeight:"700",letterSpacing:"-.02em",color:"rgba(240,240,245,.9)",display:"flex",alignItems:"center",gap:"8px"}}>
+      <div style={{fontSize:"15px",fontWeight:"700",letterSpacing:"-.02em",color:"rgba(240,240,245,.95)",display:"flex",alignItems:"center",gap:"8px"}}>
         <span style={{background:"rgba(129,140,248,.2)",border:"1px solid rgba(129,140,248,.4)",color:"#818CF8",padding:"4px 10px",borderRadius:"8px",fontSize:"11px",fontWeight:"800"}}>AI</span>
         Cold Call Trainer
       </div>
-      <div style={{display:"flex",gap:"10px"}}>
+      <div style={{display:"flex",gap:"12px"}}>
         <PearlButton variant="secondary" size="small" onClick={onApiKey}>
-          <span style={{width:"7px",height:"7px",borderRadius:"50%",background:hasKey?"#22C55E":"#F59E0B",marginRight:"4px"}}/>
+          <span style={{width:"8px",height:"8px",borderRadius:"50%",background:hasKey?"#22C55E":"#F59E0B",marginRight:"6px"}}/>
           {hasKey ? "API Key Set" : "Add API Key"}
         </PearlButton>
         <PearlButton variant="secondary" size="small" onClick={onHistory}>
@@ -548,16 +551,16 @@ function TopNav({onHistory, onApiKey, hasKey}) {
   );
 }
 
-function Glass({children,padding="24px",style={}}) {
+function Glass({children,padding="26px",style={}}) {
   return (
-    <div style={{background:"rgba(255,255,255,.03)",backdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,.07)",borderRadius:"16px",padding,...style}}>
+    <div style={{background:"rgba(255,255,255,.03)",backdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,.07)",borderRadius:"18px",padding,...style}}>
       {children}
     </div>
   );
 }
 function W({children,maxW="1100px"}) {
   return (
-    <div style={{minHeight:"100vh",background:BG,color:"#F0F0F5",fontFamily:FONT,display:"flex",flexDirection:"column",alignItems:"center",padding:"28px 20px 48px"}}>
+    <div style={{minHeight:"100vh",background:BG,color:"#F0F0F5",fontFamily:FONT,display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 24px 56px"}}>
       <style>{css}</style>
       <div style={{width:"100%",maxWidth:maxW}}>{children}</div>
     </div>
@@ -916,47 +919,47 @@ Return ONLY valid JSON, no markdown:
     <W maxW="1100px">
       <TopNav onHistory={()=>{setHistory(null);setScreen("history");}} onApiKey={()=>setShowKeyModal(true)} hasKey={!!apiKey}/>
       
-      <div style={{textAlign:"center",marginBottom:"44px",width:"100%"}}>
-        <div style={{fontSize:"11px",letterSpacing:".1em",color:"rgba(240,240,245,.4)",textTransform:"uppercase",marginBottom:"16px",fontWeight:"700"}}>AI Sales Pitch Roleplay</div>
-        <h1 style={{fontSize:"clamp(32px,5vw,56px)",fontWeight:"800",letterSpacing:"-.04em",lineHeight:1.08,margin:0}}>
+      <div style={{textAlign:"center",marginBottom:"48px",width:"100%"}}>
+        <div style={{fontSize:"12px",letterSpacing:".1em",color:"rgba(240,240,245,.45)",textTransform:"uppercase",marginBottom:"16px",fontWeight:"700"}}>AI Sales Pitch Roleplay</div>
+        <h1 style={{fontSize:"clamp(34px,5.5vw,58px)",fontWeight:"800",letterSpacing:"-.04em",lineHeight:1.08,margin:0}}>
           Train like a pro.<br/>
           <span style={{color:"#818CF8"}}>Close like a closer.</span>
         </h1>
-        <p style={{color:"rgba(240,240,245,.45)",fontSize:"clamp(14px,1.8vw,16px)",marginTop:"16px",lineHeight:1.65,maxWidth:"540px",margin:"16px auto 0"}}>
+        <p style={{color:"rgba(240,240,245,.5)",fontSize:"clamp(15px,1.9vw,17px)",marginTop:"18px",lineHeight:1.65,maxWidth:"560px",margin:"18px auto 0"}}>
           Practice cold calls against realistic AI prospects across 8 industries. Get live coaching tips, objection handling, and detailed post-call scorecards.
         </p>
       </div>
 
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px",width:"100%"}}>
-        <div style={{fontSize:"12px",letterSpacing:".08em",color:"rgba(240,240,245,.5)",textTransform:"uppercase",fontWeight:"700"}}>Select Product Industry</div>
-        <PearlButton variant="primary" size="small" onClick={()=>setScreen("customCat")}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"20px",width:"100%"}}>
+        <div style={{fontSize:"13px",letterSpacing:".08em",color:"rgba(240,240,245,.55)",textTransform:"uppercase",fontWeight:"700"}}>Select Product Industry</div>
+        <PearlButton variant="primary" size="medium" onClick={()=>setScreen("customCat")}>
           + Custom Category
         </PearlButton>
       </div>
       
-      <div className="cat-grid" style={{marginBottom:"24px"}}>
+      <div className="cat-grid" style={{marginBottom:"28px"}}>
         {CATEGORIES.map(c=>(
           <div key={c.id} className="cat-card" onClick={()=>selectCategory(c)}>
-            <div style={{fontSize:"15px",fontWeight:"600",color:"rgba(240,240,245,.95)"}}>{c.label}</div>
-            <span style={{color:"rgba(129,140,248,.7)",fontSize:"16px",fontWeight:"700"}}>→</span>
+            <div style={{fontSize:"16px",fontWeight:"600",color:"rgba(240,240,245,.95)"}}>{c.label}</div>
+            <span style={{color:"rgba(129,140,248,.8)",fontSize:"18px",fontWeight:"700"}}>→</span>
           </div>
         ))}
       </div>
 
       {customCats.length > 0 && (
         <>
-          <div style={{fontSize:"12px",letterSpacing:".08em",color:"rgba(240,240,245,.5)",textTransform:"uppercase",marginBottom:"12px",marginTop:"24px",width:"100%",fontWeight:"700"}}>Your Custom Categories</div>
-          <div className="cat-grid" style={{marginBottom:"20px"}}>
+          <div style={{fontSize:"13px",letterSpacing:".08em",color:"rgba(240,240,245,.55)",textTransform:"uppercase",marginBottom:"14px",marginTop:"28px",width:"100%",fontWeight:"700"}}>Your Custom Categories</div>
+          <div className="cat-grid" style={{marginBottom:"24px"}}>
             {customCats.map(c=>(
               <div key={c.id} className="cat-custom-card" style={{position:"relative"}} onClick={()=>selectCategory(c)}>
                 <div className="del-dot" onClick={(e)=>deleteCustomCat(c.id, e)}>
                   <span className="del-minus">−</span>
                 </div>
                 <div>
-                  <div style={{fontSize:"15px",fontWeight:"600",color:"#818CF8"}}>{c.label}</div>
-                  {c.target&&<div style={{fontSize:"12px",color:"rgba(240,240,245,.4)",marginTop:"2px"}}>{c.target}</div>}
+                  <div style={{fontSize:"16px",fontWeight:"600",color:"#818CF8"}}>{c.label}</div>
+                  {c.target&&<div style={{fontSize:"13px",color:"rgba(240,240,245,.45)",marginTop:"3px"}}>{c.target}</div>}
                 </div>
-                <span style={{color:"#818CF8",fontSize:"16px",fontWeight:"700"}}>→</span>
+                <span style={{color:"#818CF8",fontSize:"18px",fontWeight:"700"}}>→</span>
               </div>
             ))}
           </div>
@@ -965,16 +968,16 @@ Return ONLY valid JSON, no markdown:
 
       {/* API Key Modal */}
       {showKeyModal && (
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:"20px"}}>
-          <Glass style={{width:"100%",maxWidth:"440px",padding:"28px"}}>
-            <h3 style={{fontSize:"18px",fontWeight:"700",marginBottom:"8px"}}>Anthropic API Key Settings</h3>
-            <p style={{fontSize:"13px",color:"rgba(240,240,245,.5)",marginBottom:"18px",lineHeight:1.5}}>
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.78)",backdropFilter:"blur(10px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:"20px"}}>
+          <Glass style={{width:"100%",maxWidth:"460px",padding:"32px"}}>
+            <h3 style={{fontSize:"20px",fontWeight:"700",marginBottom:"10px"}}>Anthropic API Key Settings</h3>
+            <p style={{fontSize:"14px",color:"rgba(240,240,245,.55)",marginBottom:"20px",lineHeight:1.55}}>
               Enter your Anthropic API Key to use Claude live in your browser. Leave blank if your Vercel project already has `ANTHROPIC_API_KEY` configured or to use Smart Fallback Mode.
             </p>
-            <input className="txin" value={keyInput} onChange={e=>setKeyInput(e.target.value)} placeholder="sk-ant-api03-..." style={{marginBottom:"18px"}}/>
-            <div style={{display:"flex",gap:"10px"}}>
-              <PearlButton variant="secondary" onClick={()=>setShowKeyModal(false)} style={{flex:1}}>Cancel</PearlButton>
-              <PearlButton variant="primary" onClick={()=>saveApiKey(keyInput)} style={{flex:1}}>Save Key</PearlButton>
+            <input className="txin" value={keyInput} onChange={e=>setKeyInput(e.target.value)} placeholder="sk-ant-api03-..." style={{marginBottom:"22px"}}/>
+            <div style={{display:"flex",gap:"12px"}}>
+              <PearlButton variant="secondary" size="medium" onClick={()=>setShowKeyModal(false)} style={{flex:1}}>Cancel</PearlButton>
+              <PearlButton variant="primary" size="medium" onClick={()=>saveApiKey(keyInput)} style={{flex:1}}>Save Key</PearlButton>
             </div>
           </Glass>
         </div>
@@ -986,60 +989,60 @@ Return ONLY valid JSON, no markdown:
   if(screen==="call") return (
     <>
       <style>{css}</style>
-      <div style={{minHeight:"100vh",background:BG,color:"#F0F0F5",fontFamily:FONT,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"10px"}}>
+      <div style={{minHeight:"100vh",background:BG,color:"#F0F0F5",fontFamily:FONT,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"12px"}}>
         <div className="call-wrap">
           
           <div className="call-sidebar" style={{background:CBG}}>
             <div>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"20px"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"24px"}}>
                 <PearlButton variant="secondary" size="small" onClick={endCall}>← Exit</PearlButton>
                 <StatusPill status={status}/>
               </div>
 
-              <div style={{display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center",gap:"14px",marginBottom:"24px"}}>
-                <Av name={prospect?.name||"?"} size={72}/>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center",gap:"16px",marginBottom:"28px"}}>
+                <Av name={prospect?.name||"?"} size={80}/>
                 <div>
-                  <div style={{fontWeight:"700",fontSize:"18px",color:"#F0F0F5"}}>{prospect?.name}</div>
-                  <div style={{color:"rgba(240,240,245,.5)",fontSize:"13px",marginTop:"3px"}}>{prospect?.spec||prospect?.title}</div>
-                  <div style={{marginTop:"8px"}}><DBadge diff={prospect?.diff||prospect?.difficulty||"Medium"}/></div>
+                  <div style={{fontWeight:"700",fontSize:"20px",color:"#F0F0F5"}}>{prospect?.name}</div>
+                  <div style={{color:"rgba(240,240,245,.55)",fontSize:"14px",marginTop:"4px"}}>{prospect?.spec||prospect?.title}</div>
+                  <div style={{marginTop:"10px"}}><DBadge diff={prospect?.diff||prospect?.difficulty||"Medium"}/></div>
                 </div>
               </div>
 
-              <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"12px",margin:"16px 0"}}>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"14px",margin:"20px 0"}}>
                 <Waveform active={aiSpeak}/>
-                <div style={{fontVariantNumeric:"tabular-nums",fontSize:"16px",color:"rgba(240,240,245,.6)",fontWeight:"600"}}>{fmt(dur)}</div>
+                <div style={{fontVariantNumeric:"tabular-nums",fontSize:"18px",color:"rgba(240,240,245,.7)",fontWeight:"600"}}>{fmt(dur)}</div>
               </div>
             </div>
 
-            <div style={{display:"flex",flexDirection:"column",gap:"10px",width:"100%"}}>
-              {voiceOk&&<PearlButton variant="secondary" onClick={toggleMic} disabled={loading||aiSpeak} style={{width:"100%"}}>{listen?"Stop Listening":"Voice Speak"}</PearlButton>}
-              <PearlButton variant="danger" onClick={endCall} disabled={loading} style={{width:"100%"}}>End Call & Score</PearlButton>
+            <div style={{display:"flex",flexDirection:"column",gap:"12px",width:"100%"}}>
+              {voiceOk&&<PearlButton variant="secondary" size="medium" onClick={toggleMic} disabled={loading||aiSpeak} style={{width:"100%"}}>{listen?"Stop Listening":"Voice Speak"}</PearlButton>}
+              <PearlButton variant="danger" size="medium" onClick={endCall} disabled={loading} style={{width:"100%"}}>End Call & Score</PearlButton>
             </div>
           </div>
 
           <div className="call-main">
-            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(255,255,255,.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{fontSize:"13px",fontWeight:"600",color:"rgba(240,240,245,.6)",letterSpacing:".04em"}}>LIVE TRANSCRIPT</div>
-              {loading&&!aiSpeak&&<div style={{fontSize:"12px",color:"rgba(240,240,245,.4)",animation:"blink 1.2s ease-in-out infinite"}}>Prospect is thinking...</div>}
+            <div style={{padding:"18px 24px",borderBottom:"1px solid rgba(255,255,255,.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{fontSize:"13px",fontWeight:"700",color:"rgba(240,240,245,.65)",letterSpacing:".05em"}}>LIVE TRANSCRIPT</div>
+              {loading&&!aiSpeak&&<div style={{fontSize:"13px",color:"rgba(240,240,245,.45)",animation:"blink 1.2s ease-in-out infinite"}}>Prospect is thinking...</div>}
             </div>
 
-            <div ref={txRef} style={{flex:1,padding:"20px",overflowY:"auto",display:"flex",flexDirection:"column",gap:"14px",minHeight:0}}>
-              {messages.length===0&&<div style={{color:"rgba(240,240,245,.3)",fontSize:"14px",textAlign:"center",margin:"auto"}}>{loading?"Connecting call...":"Say something to start pitching"}</div>}
+            <div ref={txRef} style={{flex:1,padding:"24px",overflowY:"auto",display:"flex",flexDirection:"column",gap:"16px",minHeight:0}}>
+              {messages.length===0&&<div style={{color:"rgba(240,240,245,.35)",fontSize:"15px",textAlign:"center",margin:"auto"}}>{loading?"Connecting call...":"Say something to start pitching"}</div>}
               {messages.map((m,i)=>{
                 const isP=m.speaker==="prospect";
                 const contentText = (m.content && m.content.trim()) ? m.content : (isP ? `(Hello, ${prospect?.name||'Prospect'} here)` : '...');
                 return(
                   <div key={i} className="msg">
-                    <div style={{display:"flex",flexDirection:isP?"row":"row-reverse",gap:"10px",alignItems:"flex-start"}}>
-                      <Av name={isP?(prospect?.name||"?"):"You"} size={32}/>
-                      <div style={{maxWidth:"80%",background:isP?"rgba(255,255,255,.07)":"rgba(129,140,248,.16)",border:`1px solid ${isP?"rgba(255,255,255,.1)":"rgba(129,140,248,.3)"}`,borderRadius:isP?"4px 16px 16px 16px":"16px 4px 16px 16px",padding:"11px 16px",fontSize:"14px",lineHeight:1.6,color:isP?"rgba(240,240,245,.95)":"#C7D2FE"}}>
+                    <div style={{display:"flex",flexDirection:isP?"row":"row-reverse",gap:"12px",alignItems:"flex-start"}}>
+                      <Av name={isP?(prospect?.name||"?"):"You"} size={36}/>
+                      <div style={{maxWidth:"80%",background:isP?"rgba(255,255,255,.07)":"rgba(129,140,248,.16)",border:`1px solid ${isP?"rgba(255,255,255,.1)":"rgba(129,140,248,.3)"}`,borderRadius:isP?"4px 18px 18px 18px":"18px 4px 18px 18px",padding:"12px 18px",fontSize:"15px",lineHeight:1.6,color:isP?"rgba(240,240,245,.95)":"#C7D2FE"}}>
                         {contentText}
                       </div>
                     </div>
                     {isP&&liveTips[i]&&(
-                      <div style={{display:"flex",paddingLeft:"42px",marginTop:"6px"}}>
+                      <div style={{display:"flex",paddingLeft:"48px",marginTop:"8px"}}>
                         <div className="live-tip">
-                          <span style={{color:"#818CF8",marginRight:"6px",fontSize:"11px",fontWeight:"bold"}}>↗ COACHING TIP:</span>
+                          <span style={{color:"#818CF8",marginRight:"6px",fontSize:"11px",fontWeight:"800"}}>↗ COACHING TIP:</span>
                           {liveTips[i]}
                         </div>
                       </div>
@@ -1049,10 +1052,10 @@ Return ONLY valid JSON, no markdown:
               })}
             </div>
 
-            <div style={{padding:"16px",borderTop:"1px solid rgba(255,255,255,.07)",background:"rgba(0,0,0,.2)"}}>
-              <div style={{display:"flex",gap:"10px"}}>
+            <div style={{padding:"18px 24px",borderTop:"1px solid rgba(255,255,255,.07)",background:"rgba(0,0,0,.2)"}}>
+              <div style={{display:"flex",gap:"12px"}}>
                 <input className="txin" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send(input)} placeholder={listen?"Listening to your voice...":aiSpeak?"Prospect speaking...":"Type your reply and press Enter..."} disabled={loading||aiSpeak||listen}/>
-                <PearlButton variant="primary" onClick={()=>send(input)} disabled={loading||aiSpeak||listen||!input.trim()} style={{whiteSpace:"nowrap"}}>Send</PearlButton>
+                <PearlButton variant="primary" size="medium" onClick={()=>send(input)} disabled={loading||aiSpeak||listen||!input.trim()} style={{whiteSpace:"nowrap"}}>Send</PearlButton>
               </div>
             </div>
           </div>
@@ -1067,28 +1070,28 @@ Return ONLY valid JSON, no markdown:
     const list = [...(PROSPECTS[cat?.id]||[]), ...savedProspects];
     return (
       <W maxW="1000px">
-        <PearlButton variant="secondary" size="small" onClick={goHome} style={{alignSelf:"flex-start",marginBottom:"20px"}}>← Home</PearlButton>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:"24px",width:"100%"}}>
+        <PearlButton variant="secondary" size="small" onClick={goHome} style={{alignSelf:"flex-start",marginBottom:"24px"}}>← Home</PearlButton>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:"28px",width:"100%"}}>
           <div>
-            <div style={{fontSize:"12px",letterSpacing:".08em",color:"#818CF8",textTransform:"uppercase",fontWeight:"700",marginBottom:"4px"}}>{cat?.label}</div>
-            <h2 style={{fontSize:"28px",fontWeight:"700",margin:0}}>Select a Prospect</h2>
+            <div style={{fontSize:"13px",letterSpacing:".08em",color:"#818CF8",textTransform:"uppercase",fontWeight:"700",marginBottom:"6px"}}>{cat?.label}</div>
+            <h2 style={{fontSize:"30px",fontWeight:"700",margin:0}}>Select a Prospect</h2>
           </div>
-          <PearlButton variant="primary" size="small" onClick={()=>setScreen("customProspect")}>+ Custom Prospect</PearlButton>
+          <PearlButton variant="primary" size="medium" onClick={()=>setScreen("customProspect")}>+ Custom Prospect</PearlButton>
         </div>
 
-        <div className="prospect-grid" style={{marginBottom:"24px"}}>
+        <div className="prospect-grid" style={{marginBottom:"28px"}}>
           {list.map((p,i)=>(
             <div key={i} className="p-row" onClick={()=>startCall(p)}>
-              <Av name={p.name} size={48}/>
+              <Av name={p.name} size={52}/>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"4px"}}>
-                  <span style={{fontWeight:"700",fontSize:"16px",color:"rgba(240,240,245,.95)"}}>{p.name}</span>
+                <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"4px"}}>
+                  <span style={{fontWeight:"700",fontSize:"17px",color:"rgba(240,240,245,.95)"}}>{p.name}</span>
                   <DBadge diff={p.diff||p.difficulty}/>
                 </div>
-                <div style={{color:"rgba(240,240,245,.45)",fontSize:"13px"}}>{p.spec||p.title}</div>
-                {p.ctx && <div style={{color:"rgba(240,240,245,.3)",fontSize:"12px",marginTop:"6px",lineHeight:1.4,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{p.ctx}</div>}
+                <div style={{color:"rgba(240,240,245,.5)",fontSize:"14px"}}>{p.spec||p.title}</div>
+                {p.ctx && <div style={{color:"rgba(240,240,245,.35)",fontSize:"13px",marginTop:"8px",lineHeight:1.45,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{p.ctx}</div>}
               </div>
-              <span style={{color:"#818CF8",fontSize:"15px",fontWeight:"700"}}>Call →</span>
+              <span style={{color:"#818CF8",fontSize:"16px",fontWeight:"700"}}>Call →</span>
             </div>
           ))}
         </div>
@@ -1107,25 +1110,25 @@ Return ONLY valid JSON, no markdown:
     ].filter(c=>c.s?.score!=null);
 
     return (
-      <W maxW="900px">
-        <div style={{textAlign:"center",marginBottom:"32px",width:"100%"}}>
-          <div style={{fontSize:"72px",fontWeight:"800",letterSpacing:"-.05em",lineHeight:1,color:v.c,marginBottom:"12px"}}>
-            {score?.overall}<span style={{fontSize:"32px",color:"rgba(240,240,245,.3)",fontWeight:"600"}}>/10</span>
+      <W maxW="920px">
+        <div style={{textAlign:"center",marginBottom:"36px",width:"100%"}}>
+          <div style={{fontSize:"76px",fontWeight:"800",letterSpacing:"-.05em",lineHeight:1,color:v.c,marginBottom:"14px"}}>
+            {score?.overall}<span style={{fontSize:"34px",color:"rgba(240,240,245,.3)",fontWeight:"600"}}>/10</span>
           </div>
           <VBadge verdict={score?.verdict}/>
-          <div style={{color:"rgba(240,240,245,.4)",fontSize:"14px",marginTop:"12px"}}>{prospect?.name} · {score?.exchanges} exchanges · {fmt(score?.dur||0)}</div>
+          <div style={{color:"rgba(240,240,245,.45)",fontSize:"15px",marginTop:"14px"}}>{prospect?.name} · {score?.exchanges} exchanges · {fmt(score?.dur||0)}</div>
         </div>
 
-        <div className="two-col-layout" style={{marginBottom:"24px"}}>
+        <div className="two-col-layout" style={{marginBottom:"28px"}}>
           {scoreCats.length>0&&(
-            <Glass style={{padding:"24px",width:"100%"}}>
-              <div style={{fontSize:"12px",letterSpacing:".08em",color:"rgba(240,240,245,.4)",textTransform:"uppercase",fontWeight:"700",marginBottom:"20px"}}>Skill Breakdown</div>
-              <div style={{display:"flex",flexDirection:"column",gap:"20px"}}>
+            <Glass style={{padding:"28px",width:"100%"}}>
+              <div style={{fontSize:"13px",letterSpacing:".08em",color:"rgba(240,240,245,.45)",textTransform:"uppercase",fontWeight:"700",marginBottom:"22px"}}>Skill Breakdown</div>
+              <div style={{display:"flex",flexDirection:"column",gap:"22px"}}>
                 {scoreCats.map((c,i)=>(
                   <div key={i}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:"8px"}}><span style={{fontSize:"14px",fontWeight:"600"}}>{c.label}</span><span style={{fontVariantNumeric:"tabular-nums",fontSize:"14px",fontWeight:"700",color:"#818CF8"}}>{c.s.score}/10</span></div>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:"8px"}}><span style={{fontSize:"15px",fontWeight:"600"}}>{c.label}</span><span style={{fontVariantNumeric:"tabular-nums",fontSize:"15px",fontWeight:"700",color:"#818CF8"}}>{c.s.score}/10</span></div>
                     <ScoreBar score={c.s.score}/>
-                    {c.fb&&<div style={{fontSize:"12px",color:"rgba(240,240,245,.45)",marginTop:"6px",lineHeight:1.5}}>{c.fb}</div>}
+                    {c.fb&&<div style={{fontSize:"13px",color:"rgba(240,240,245,.5)",marginTop:"7px",lineHeight:1.55}}>{c.fb}</div>}
                   </div>
                 ))}
               </div>
@@ -1133,22 +1136,22 @@ Return ONLY valid JSON, no markdown:
           )}
 
           {score?.coachingTip&&(
-            <Glass style={{padding:"24px",width:"100%",background:"rgba(129,140,248,.05)",borderColor:"rgba(129,140,248,.2)",display:"flex",flexDirection:"column",justifyContent:"space-between"}}>
+            <Glass style={{padding:"28px",width:"100%",background:"rgba(129,140,248,.05)",borderColor:"rgba(129,140,248,.2)",display:"flex",flexDirection:"column",justifyContent:"space-between"}}>
               <div>
-                <div style={{fontSize:"12px",letterSpacing:".08em",color:"#818CF8",fontWeight:"700",textTransform:"uppercase",marginBottom:"12px"}}>AI Coaching Insight</div>
-                <div style={{fontSize:"15px",color:"rgba(240,240,245,.85)",lineHeight:1.7}}>{score.coachingTip}</div>
+                <div style={{fontSize:"13px",letterSpacing:".08em",color:"#818CF8",fontWeight:"700",textTransform:"uppercase",marginBottom:"14px"}}>AI Coaching Insight</div>
+                <div style={{fontSize:"16px",color:"rgba(240,240,245,.9)",lineHeight:1.7}}>{score.coachingTip}</div>
               </div>
-              <div style={{marginTop:"24px",paddingTop:"16px",borderTop:"1px solid rgba(255,255,255,.08)",fontSize:"13px",color:"rgba(240,240,245,.4)"}}>
+              <div style={{marginTop:"28px",paddingTop:"18px",borderTop:"1px solid rgba(255,255,255,.08)",fontSize:"13px",color:"rgba(240,240,245,.45)"}}>
                 Review past sessions anytime in Call History to compare performance trends.
               </div>
             </Glass>
           )}
         </div>
 
-        <div style={{display:"flex",gap:"12px",width:"100%",maxWidth:"520px",margin:"0 auto"}}>
-          <PearlButton variant="secondary" onClick={goHome} style={{flex:1}}>Home</PearlButton>
-          <PearlButton variant="secondary" onClick={()=>setScreen("prospects")} style={{flex:1}}>Change Prospect</PearlButton>
-          <PearlButton variant="primary" onClick={()=>startCall(prospect)} style={{flex:1.5}}>Try Again</PearlButton>
+        <div style={{display:"flex",gap:"14px",width:"100%",maxWidth:"560px",margin:"0 auto"}}>
+          <PearlButton variant="secondary" size="medium" onClick={goHome} style={{flex:1}}>Home</PearlButton>
+          <PearlButton variant="secondary" size="medium" onClick={()=>setScreen("prospects")} style={{flex:1}}>Change Prospect</PearlButton>
+          <PearlButton variant="primary" size="medium" onClick={()=>startCall(prospect)} style={{flex:1.5}}>Try Again</PearlButton>
         </div>
       </W>
     );
@@ -1157,108 +1160,108 @@ Return ONLY valid JSON, no markdown:
   // ── HISTORY SCREEN ───────────────────────────────────────────────────────
   if(screen==="history") return (
     <W maxW="1000px">
-      <PearlButton variant="secondary" size="small" onClick={goHome} style={{alignSelf:"flex-start",marginBottom:"20px"}}>← Home</PearlButton>
-      <div style={{marginBottom:"24px",width:"100%"}}>
-        <h2 style={{fontSize:"28px",fontWeight:"700",margin:0}}>Call History & Insights</h2>
+      <PearlButton variant="secondary" size="small" onClick={goHome} style={{alignSelf:"flex-start",marginBottom:"24px"}}>← Home</PearlButton>
+      <div style={{marginBottom:"28px",width:"100%"}}>
+        <h2 style={{fontSize:"30px",fontWeight:"700",margin:0}}>Call History & Insights</h2>
       </div>
 
       {history?.length > 0 ? (
         <>
-          <Glass style={{padding:"22px",marginBottom:"24px",width:"100%"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"14px"}}>
-              <span style={{fontSize:"12px",fontWeight:"700",color:"#818CF8",textTransform:"uppercase",letterSpacing:".06em"}}>Aggregate Performance Analysis</span>
+          <Glass style={{padding:"26px",marginBottom:"28px",width:"100%"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}}>
+              <span style={{fontSize:"13px",fontWeight:"700",color:"#818CF8",textTransform:"uppercase",letterSpacing:".06em"}}>Aggregate Performance Analysis</span>
               <PearlButton variant="primary" size="small" onClick={generateInsights} disabled={insLoad}>
                 {insLoad?"Analyzing...":"Generate Insights"}
               </PearlButton>
             </div>
             {insight ? (
-              <div style={{fontSize:"14px",color:"rgba(240,240,245,.85)",lineHeight:1.65}}>{insight}</div>
+              <div style={{fontSize:"15px",color:"rgba(240,240,245,.9)",lineHeight:1.7}}>{insight}</div>
             ) : (
-              <div style={{fontSize:"13px",color:"rgba(240,240,245,.4)"}}>Click generate to get an overall AI analysis of your call history.</div>
+              <div style={{fontSize:"14px",color:"rgba(240,240,245,.45)"}}>Click generate to get an overall AI analysis of your call history.</div>
             )}
           </Glass>
 
-          <div style={{display:"flex",flexDirection:"column",gap:"12px",width:"100%",marginBottom:"24px"}}>
+          <div style={{display:"flex",flexDirection:"column",gap:"14px",width:"100%",marginBottom:"28px"}}>
             {history.map((c,i)=>(
               <div key={i} className="h-row" onClick={()=>openDetail(c)}>
-                <Av name={c.prospectName} size={44}/>
+                <Av name={c.prospectName} size={48}/>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontWeight:"600",fontSize:"15px"}}>{c.prospectName}</div>
-                  <div style={{fontSize:"13px",color:"rgba(240,240,245,.45)"}}>{c.catLabel} · {fmtDate(c.date)}</div>
+                  <div style={{fontWeight:"600",fontSize:"16px"}}>{c.prospectName}</div>
+                  <div style={{fontSize:"13px",color:"rgba(240,240,245,.5)"}}>{c.catLabel} · {fmtDate(c.date)}</div>
                 </div>
-                <div style={{display:"flex",alignItems:"center",gap:"14px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"16px"}}>
                   <VBadge verdict={c.verdict}/>
-                  <span style={{fontWeight:"800",color:"#818CF8",fontSize:"16px"}}>{c.overall}/10</span>
+                  <span style={{fontWeight:"800",color:"#818CF8",fontSize:"17px"}}>{c.overall}/10</span>
                 </div>
               </div>
             ))}
           </div>
 
           {!resetConfirm ? (
-            <PearlButton variant="danger" size="small" onClick={()=>setResetConfirm(true)} style={{width:"100%",maxWidth:"300px",margin:"0 auto"}}>
+            <PearlButton variant="danger" size="small" onClick={()=>setResetConfirm(true)} style={{width:"100%",maxWidth:"320px",margin:"0 auto"}}>
               Reset Call History
             </PearlButton>
           ) : (
-            <div style={{display:"flex",gap:"10px",width:"100%",maxWidth:"300px",margin:"0 auto"}}>
-              <PearlButton variant="secondary" onClick={()=>setResetConfirm(false)} style={{flex:1}}>Cancel</PearlButton>
-              <PearlButton variant="danger" onClick={resetHistory} style={{flex:1}}>Confirm Reset</PearlButton>
+            <div style={{display:"flex",gap:"12px",width:"100%",maxWidth:"340px",margin:"0 auto"}}>
+              <PearlButton variant="secondary" size="small" onClick={()=>setResetConfirm(false)} style={{flex:1}}>Cancel</PearlButton>
+              <PearlButton variant="danger" size="small" onClick={resetHistory} style={{flex:1}}>Confirm Reset</PearlButton>
             </div>
           )}
         </>
       ) : (
-        <div style={{textAlign:"center",padding:"60px 0",color:"rgba(240,240,245,.4)"}}>No call history recorded yet. Practice a call to view stats!</div>
+        <div style={{textAlign:"center",padding:"60px 0",color:"rgba(240,240,245,.45)",fontSize:"15px"}}>No call history recorded yet. Practice a call to view stats!</div>
       )}
     </W>
   );
 
   // ── CALL DETAIL SCREEN ────────────────────────────────────────────────────
   if(screen==="detail"&&detailCall) return (
-    <W maxW="900px">
-      <PearlButton variant="secondary" size="small" onClick={()=>setScreen("history")} style={{alignSelf:"flex-start",marginBottom:"20px"}}>← History</PearlButton>
+    <W maxW="920px">
+      <PearlButton variant="secondary" size="small" onClick={()=>setScreen("history")} style={{alignSelf:"flex-start",marginBottom:"24px"}}>← History</PearlButton>
       
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"20px",width:"100%"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"24px",width:"100%"}}>
         <div>
-          <h2 style={{fontSize:"24px",fontWeight:"700",margin:0}}>{detailCall.prospectName}</h2>
-          <div style={{fontSize:"13px",color:"rgba(240,240,245,.4)",marginTop:"3px"}}>{detailCall.catLabel} · {fmtDate(detailCall.date)}</div>
+          <h2 style={{fontSize:"26px",fontWeight:"700",margin:0}}>{detailCall.prospectName}</h2>
+          <div style={{fontSize:"14px",color:"rgba(240,240,245,.45)",marginTop:"4px"}}>{detailCall.catLabel} · {fmtDate(detailCall.date)}</div>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:"14px"}}>
           <VBadge verdict={detailCall.verdict}/>
-          <div style={{fontSize:"28px",fontWeight:"800",color:"#818CF8"}}>{detailCall.overall}/10</div>
+          <div style={{fontSize:"32px",fontWeight:"800",color:"#818CF8"}}>{detailCall.overall}/10</div>
         </div>
       </div>
 
-      <Glass style={{padding:"20px",marginBottom:"24px",width:"100%"}}>
+      <Glass style={{padding:"24px",marginBottom:"28px",width:"100%"}}>
         {detailCall.coachingTip&&(
-          <div style={{fontSize:"14px",color:"rgba(240,240,245,.8)",lineHeight:1.6}}>
+          <div style={{fontSize:"15px",color:"rgba(240,240,245,.85)",lineHeight:1.65}}>
             <strong style={{color:"#818CF8"}}>Coaching Tip:</strong> {detailCall.coachingTip}
           </div>
         )}
       </Glass>
 
-      <div style={{width:"100%",marginBottom:"24px"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}}>
-          <span style={{fontSize:"12px",fontWeight:"700",color:"rgba(240,240,245,.5)",textTransform:"uppercase"}}>Full Conversation & Recommendations</span>
+      <div style={{width:"100%",marginBottom:"28px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"18px"}}>
+          <span style={{fontSize:"13px",fontWeight:"700",color:"rgba(240,240,245,.55)",textTransform:"uppercase"}}>Full Conversation & Recommendations</span>
           <PearlButton variant="primary" size="small" onClick={generateSuggestions} disabled={sugLoading}>
             {sugLoading?"Generating...":"Best Closer Alternatives"}
           </PearlButton>
         </div>
 
-        <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+        <div style={{display:"flex",flexDirection:"column",gap:"14px"}}>
           {detailCall.messages?.map((m,i)=>{
             const isP = m.speaker === "prospect";
             const traineeIdx = detailCall.messages.slice(0,i+1).filter(x=>x.speaker==="trainee").length - 1;
             return (
               <div key={i}>
-                <div style={{display:"flex",gap:"10px",alignItems:"flex-start",flexDirection:isP?"row":"row-reverse"}}>
-                  <Av name={isP?detailCall.prospectName:"You"} size={30}/>
-                  <div style={{maxWidth:"82%",background:isP?"rgba(255,255,255,.06)":"rgba(129,140,248,.16)",padding:"10px 14px",borderRadius:"12px",fontSize:"14px",lineHeight:1.55}}>
+                <div style={{display:"flex",gap:"12px",alignItems:"flex-start",flexDirection:isP?"row":"row-reverse"}}>
+                  <Av name={isP?detailCall.prospectName:"You"} size={34}/>
+                  <div style={{maxWidth:"82%",background:isP?"rgba(255,255,255,.06)":"rgba(129,140,248,.16)",padding:"12px 18px",borderRadius:"14px",fontSize:"15px",lineHeight:1.6}}>
                     {m.content}
                   </div>
                 </div>
                 {!isP && suggestions?.[traineeIdx] && (
-                  <div className="sug-box" style={{marginRight:"40px",marginTop:"6px"}}>
-                    <div style={{fontSize:"11px",color:"#22C55E",fontWeight:"700",marginBottom:"3px"}}>World-Class Closer Alternative:</div>
-                    <div style={{fontSize:"13px",color:"rgba(240,240,245,.9)"}}>{suggestions[traineeIdx]}</div>
+                  <div className="sug-box" style={{marginRight:"46px",marginTop:"8px"}}>
+                    <div style={{fontSize:"12px",color:"#22C55E",fontWeight:"700",marginBottom:"4px"}}>World-Class Closer Alternative:</div>
+                    <div style={{fontSize:"14px",color:"rgba(240,240,245,.95)"}}>{suggestions[traineeIdx]}</div>
                   </div>
                 )}
               </div>
@@ -1271,30 +1274,30 @@ Return ONLY valid JSON, no markdown:
 
   // ── CUSTOM CATEGORY FORM ──────────────────────────────────────────────────
   if(screen==="customCat") return (
-    <W maxW="600px">
-      <PearlButton variant="secondary" size="small" onClick={goHome} style={{alignSelf:"flex-start",marginBottom:"20px"}}>← Cancel</PearlButton>
-      <Glass style={{width:"100%",padding:"28px"}}>
-        <h2 style={{fontSize:"22px",fontWeight:"700",marginBottom:"18px"}}>Create Custom Product Category</h2>
-        <div className="fl" style={{marginBottom:"16px"}}>
+    <W maxW="640px">
+      <PearlButton variant="secondary" size="small" onClick={goHome} style={{alignSelf:"flex-start",marginBottom:"24px"}}>← Cancel</PearlButton>
+      <Glass style={{width:"100%",padding:"32px"}}>
+        <h2 style={{fontSize:"24px",fontWeight:"700",marginBottom:"20px"}}>Create Custom Product Category</h2>
+        <div className="fl" style={{marginBottom:"18px"}}>
           <label className="lbl">Product or Service Name</label>
           <input className="txin" value={ccForm.product} onChange={e=>setCcForm({...ccForm,product:e.target.value})} placeholder="e.g. AI Workflow Automation"/>
         </div>
-        <div className="fl" style={{marginBottom:"24px"}}>
+        <div className="fl" style={{marginBottom:"28px"}}>
           <label className="lbl">Target Audience / Persona</label>
           <input className="txin" value={ccForm.target} onChange={e=>setCcForm({...ccForm,target:e.target.value})} placeholder="e.g. VP Operations at Logistics Companies"/>
         </div>
-        <PearlButton variant="primary" onClick={handleSubmitCc} disabled={!ccForm.product.trim()} style={{width:"100%"}}>Create Category</PearlButton>
+        <PearlButton variant="primary" size="medium" onClick={handleSubmitCc} disabled={!ccForm.product.trim()} style={{width:"100%"}}>Create Category</PearlButton>
       </Glass>
     </W>
   );
 
   // ── CUSTOM PROSPECT FORM ──────────────────────────────────────────────────
   if(screen==="customProspect") return (
-    <W maxW="700px">
-      <PearlButton variant="secondary" size="small" onClick={()=>setScreen("prospects")} style={{alignSelf:"flex-start",marginBottom:"20px"}}>← Cancel</PearlButton>
-      <Glass style={{width:"100%",padding:"28px"}}>
-        <h2 style={{fontSize:"22px",fontWeight:"700",marginBottom:"18px"}}>Create Custom Prospect Persona</h2>
-        <div className="cp-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px",marginBottom:"14px"}}>
+    <W maxW="740px">
+      <PearlButton variant="secondary" size="small" onClick={()=>setScreen("prospects")} style={{alignSelf:"flex-start",marginBottom:"24px"}}>← Cancel</PearlButton>
+      <Glass style={{width:"100%",padding:"32px"}}>
+        <h2 style={{fontSize:"24px",fontWeight:"700",marginBottom:"20px"}}>Create Custom Prospect Persona</h2>
+        <div className="cp-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"16px",marginBottom:"16px"}}>
           <div className="fl">
             <label className="lbl">Name</label>
             <input className="txin" value={cpForm.name} onChange={e=>setCpForm({...cpForm,name:e.target.value})} placeholder="e.g. Mark Vance"/>
@@ -1305,7 +1308,7 @@ Return ONLY valid JSON, no markdown:
           </div>
         </div>
 
-        <div className="cp-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px",marginBottom:"14px"}}>
+        <div className="cp-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"16px",marginBottom:"16px"}}>
           <div className="fl">
             <label className="lbl">Difficulty</label>
             <select className="txin" value={cpForm.difficulty} onChange={e=>setCpForm({...cpForm,difficulty:e.target.value})}>
@@ -1323,17 +1326,17 @@ Return ONLY valid JSON, no markdown:
           </div>
         </div>
 
-        <div className="fl" style={{marginBottom:"14px"}}>
+        <div className="fl" style={{marginBottom:"16px"}}>
           <label className="lbl">Main Objection</label>
           <input className="txin" value={cpForm.objection} onChange={e=>setCpForm({...cpForm,objection:e.target.value})} placeholder="e.g. Already locked into a 2-year contract"/>
         </div>
 
-        <div className="fl" style={{marginBottom:"24px"}}>
+        <div className="fl" style={{marginBottom:"28px"}}>
           <label className="lbl">Key Context</label>
           <textarea className="txarea" value={cpForm.context} onChange={e=>setCpForm({...cpForm,context:e.target.value})} placeholder="e.g. Skeptical buyer who only cares about ROI metrics..."/>
         </div>
 
-        <PearlButton variant="primary" onClick={handleSubmitCp} disabled={!cpForm.name.trim()||!cpForm.title.trim()} style={{width:"100%"}}>Start Call with Custom Prospect</PearlButton>
+        <PearlButton variant="primary" size="medium" onClick={handleSubmitCp} disabled={!cpForm.name.trim()||!cpForm.title.trim()} style={{width:"100%"}}>Start Call with Custom Prospect</PearlButton>
       </Glass>
     </W>
   );

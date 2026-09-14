@@ -14,31 +14,30 @@ export const PearlButton = ({
 }) => {
   const contentText = label || children;
 
-  // Custom theme colors based on variant
   const getVariantStyles = () => {
     switch (variant) {
       case "danger":
         return {
           bg: "#1c0a0a",
-          glowColor: "rgba(239, 68, 68, 0.4)",
+          glowColor: "rgba(239, 68, 68, 0.45)",
           textColor: "#fca5a5",
           accentColor: "#ef4444",
-          borderGlow: "rgba(239, 68, 68, 0.3)",
+          borderGlow: "rgba(239, 68, 68, 0.35)",
         };
       case "secondary":
       case "ghost":
         return {
           bg: "#0d0e15",
-          glowColor: "rgba(255, 255, 255, 0.15)",
-          textColor: "rgba(240, 240, 245, 0.85)",
+          glowColor: "rgba(255, 255, 255, 0.18)",
+          textColor: "rgba(240, 240, 245, 0.95)",
           accentColor: "#818cf8",
-          borderGlow: "rgba(255, 255, 255, 0.15)",
+          borderGlow: "rgba(255, 255, 255, 0.18)",
         };
       case "primary":
       default:
         return {
           bg: "#0b0c16",
-          glowColor: "rgba(129, 140, 248, 0.4)",
+          glowColor: "rgba(129, 140, 248, 0.45)",
           textColor: "#ffffff",
           accentColor: "#818cf8",
           borderGlow: "rgba(129, 140, 248, 0.4)",
@@ -64,11 +63,11 @@ export const PearlButton = ({
           align-items: center;
           justify-content: center;
           box-shadow:
-            inset 0 0.25rem 0.6rem rgba(255, 255, 255, 0.25),
-            inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.8),
-            inset 0 -0.3rem 0.7rem var(--btn-glow, rgba(129, 140, 248, 0.3)),
-            0 0.8rem 1.5rem rgba(0, 0, 0, 0.4),
-            0 0.4rem 0.6rem -0.2rem rgba(0, 0, 0, 0.8);
+            inset 0 0.3rem 0.7rem rgba(255, 255, 255, 0.3),
+            inset 0 -0.15rem 0.35rem rgba(0, 0, 0, 0.85),
+            inset 0 -0.35rem 0.8rem var(--btn-glow, rgba(129, 140, 248, 0.4)),
+            0 1rem 2rem rgba(0, 0, 0, 0.45),
+            0 0.5rem 0.8rem -0.2rem rgba(0, 0, 0, 0.85);
           user-select: none;
           text-decoration: none;
         }
@@ -82,8 +81,9 @@ export const PearlButton = ({
         }
 
         .pearl-button .wrap {
-          font-weight: 600;
-          color: var(--btn-text, rgba(255, 255, 255, 0.9));
+          font-weight: 700;
+          letter-spacing: 0.01em;
+          color: var(--btn-text, rgba(255, 255, 255, 0.95));
           border-radius: inherit;
           position: relative;
           overflow: hidden;
@@ -94,17 +94,18 @@ export const PearlButton = ({
           justify-content: center;
         }
 
+        /* Increased Padding on all sides & Improved Font Size */
         .pearl-button-sm .wrap {
-          font-size: 13px;
-          padding: 8px 18px;
+          font-size: 14px;
+          padding: 12px 24px;
         }
         .pearl-button-md .wrap {
-          font-size: 15px;
-          padding: 12px 28px;
+          font-size: 16px;
+          padding: 16px 36px;
         }
         .pearl-button-lg .wrap {
-          font-size: 18px;
-          padding: 16px 36px;
+          font-size: 20px;
+          padding: 22px 48px;
         }
 
         .pearl-button .wrap p span:nth-child(2) {
@@ -120,12 +121,12 @@ export const PearlButton = ({
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
+          gap: 10px;
           margin: 0;
           transition: all 0.2s ease;
           transform: translateY(1%);
-          -webkit-mask-image: linear-gradient(to bottom, white 55%, rgba(255, 255, 255, 0.7));
-                  mask-image: linear-gradient(to bottom, white 55%, rgba(255, 255, 255, 0.7));
+          -webkit-mask-image: linear-gradient(to bottom, white 60%, rgba(255, 255, 255, 0.8));
+                  mask-image: linear-gradient(to bottom, white 60%, rgba(255, 255, 255, 0.8));
         }
 
         .pearl-button .wrap::before,
@@ -141,7 +142,7 @@ export const PearlButton = ({
           bottom: 25%;
           top: -100%;
           border-radius: 50%;
-          background-color: rgba(255, 255, 255, 0.14);
+          background-color: rgba(255, 255, 255, 0.16);
         }
         .pearl-button .wrap::after {
           left: 6%;
@@ -149,10 +150,10 @@ export const PearlButton = ({
           top: 10%;
           bottom: 40%;
           border-radius: 22px 22px 0 0;
-          box-shadow: inset 0 8px 8px -6px rgba(255, 255, 255, 0.7);
+          box-shadow: inset 0 10px 10px -6px rgba(255, 255, 255, 0.75);
           background: linear-gradient(
             180deg,
-            rgba(255, 255, 255, 0.35) 0%,
+            rgba(255, 255, 255, 0.4) 0%,
             rgba(0, 0, 0, 0) 60%,
             rgba(0, 0, 0, 0) 100%
           );
@@ -160,18 +161,18 @@ export const PearlButton = ({
 
         .pearl-button:hover:not(:disabled) {
           box-shadow:
-            inset 0 0.3rem 0.6rem rgba(255, 255, 255, 0.45),
-            inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.8),
-            inset 0 -0.4rem 0.9rem var(--btn-glow, rgba(129, 140, 248, 0.5)),
-            0 1.2rem 2rem rgba(0, 0, 0, 0.5),
-            0 0.5rem 0.8rem -0.2rem var(--btn-border-glow, rgba(129, 140, 248, 0.3));
-          transform: translateY(-1px);
+            inset 0 0.35rem 0.7rem rgba(255, 255, 255, 0.5),
+            inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.85),
+            inset 0 -0.45rem 1rem var(--btn-glow, rgba(129, 140, 248, 0.55)),
+            0 1.4rem 2.2rem rgba(0, 0, 0, 0.55),
+            0 0.6rem 1rem -0.2rem var(--btn-border-glow, rgba(129, 140, 248, 0.35));
+          transform: translateY(-2px);
         }
         .pearl-button:hover:not(:disabled) .wrap::before {
           transform: translateY(-6%);
         }
         .pearl-button:hover:not(:disabled) .wrap::after {
-          opacity: 0.55;
+          opacity: 0.6;
           transform: translateY(4%);
         }
         .pearl-button:hover:not(:disabled) .wrap p {
@@ -202,9 +203,9 @@ export const PearlButton = ({
       >
         <div className="wrap">
           <p>
-            <span style={{ color: v.accentColor, fontSize: "0.85em" }}>✧</span>
-            <span style={{ color: v.accentColor, fontSize: "0.85em" }}>✦</span>
-            {icon && <span style={{ display: "inline-flex", marginRight: "2px" }}>{icon}</span>}
+            <span style={{ color: v.accentColor, fontSize: "0.9em" }}>✧</span>
+            <span style={{ color: v.accentColor, fontSize: "0.9em" }}>✦</span>
+            {icon && <span style={{ display: "inline-flex", marginRight: "3px" }}>{icon}</span>}
             {contentText}
           </p>
         </div>
