@@ -411,6 +411,15 @@ const css = `
 .h-row{display:flex;align-items:center;gap:14px;padding:16px 20px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:14px;cursor:pointer;transition:background .18s ease}
 .h-row:hover{background:rgba(255,255,255,.065)}
 
+@media (min-width: 768px) {
+  .cat-card, .cat-custom-card, .cat-add { padding: 32px 36px; font-size: 18px; }
+  .cat-card h3, .cat-custom-card h3 { font-size: 24px; margin-bottom: 8px; }
+  .p-row { padding: 24px 28px; font-size: 18px; }
+  .p-row h4 { font-size: 22px; margin-bottom: 6px; }
+  .h-row { padding: 22px 26px; font-size: 17px; }
+  .txin, .txarea { font-size: 18px !important; padding: 18px 24px !important; }
+}
+
 .txin{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;color:#F0F0F5;font-family:inherit;font-size:16px;padding:14px 20px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
 .txin:focus{border-color:rgba(129,140,248,.5);box-shadow:0 0 0 3px rgba(129,140,248,.15)}
 .txin::placeholder{color:rgba(240,240,245,.35)}
