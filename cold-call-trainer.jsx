@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { PearlButton } from "./components/ui/pearl-button";
+import CharacterWave from "./components/ui/character-wave";
 
 const CATEGORIES = [
   { id:"saas",       label:"SaaS / Software" },
@@ -573,9 +574,12 @@ function Glass({children,padding="26px",style={}}) {
 }
 function W({children,maxW="1100px"}) {
   return (
-    <div style={{minHeight:"100vh",background:BG,color:"#F0F0F5",fontFamily:FONT,display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 24px 56px"}}>
+    <div style={{minHeight:"100vh",background:BG,color:"#F0F0F5",fontFamily:FONT,display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 24px 56px",position:"relative"}}>
+      <div style={{position: "fixed", inset: 0, zIndex: 0, opacity: 0.45, pointerEvents: "none"}}>
+        <CharacterWave hue={250} opacity={0.7} saturation={1.3} speed={0.8} />
+      </div>
       <style dangerouslySetInnerHTML={{ __html: css }} />
-      <div style={{width:"100%",maxWidth:maxW}}>{children}</div>
+      <div style={{width:"100%",maxWidth:maxW,position:"relative",zIndex:1}}>{children}</div>
     </div>
   );
 }
