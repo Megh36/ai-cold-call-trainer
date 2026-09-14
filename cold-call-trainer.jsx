@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { PearlButton } from "./components/ui/pearl-button";
 
 const CATEGORIES = [
   { id:"saas",       label:"SaaS / Software" },
@@ -70,7 +71,6 @@ const PROSPECTS = {
   ],
 };
 
-const TRAITS = ["Skeptical","Analytical","Time-poor","Budget-conscious","Relationship-focused","Compliance-focused","Technical buyer","Already has a solution","Open to new tools","Process-driven","Gatekeeper"];
 const MALE_VX   = ["male","david","mark","james","daniel","alex","tom","fred","oliver","jorge","guy"];
 const FEMALE_VX = ["female","samantha","karen","victoria","zira","allison","susan","lisa","moira","tessa","serena","fiona","hazel","kate"];
 
@@ -151,9 +151,7 @@ const storage = {
   }
 };
 
-const saveCall = async (data) => {
-  await storage.set(`call:${data.id}`, JSON.stringify(data));
-};
+const saveCall = async (data) => { await storage.set(`call:${data.id}`, JSON.stringify(data)); };
 const loadHistory = async () => {
   try {
     const keys = await storage.list("call:");
@@ -177,9 +175,7 @@ const loadHistory = async () => {
       });
   } catch { return []; }
 };
-const saveCustomCat = async (data) => {
-  await storage.set(`ccat:${data.id}`, JSON.stringify(data));
-};
+const saveCustomCat = async (data) => { await storage.set(`ccat:${data.id}`, JSON.stringify(data)); };
 const loadCustomCats = async () => {
   try {
     const keys = await storage.list("ccat:");
@@ -199,9 +195,7 @@ const deleteCustomCatFromStorage = async (catId) => {
     if (keys?.keys?.length) await Promise.all(keys.keys.map(k => storage.delete(k)));
   } catch {}
 };
-const saveCustomProspect = async (catId, data) => {
-  await storage.set(`cprospect:${catId}:${data.id}`, JSON.stringify(data));
-};
+const saveCustomProspect = async (catId, data) => { await storage.set(`cprospect:${catId}:${data.id}`, JSON.stringify(data)); };
 const loadCustomProspects = async (catId) => {
   try {
     const keys = await storage.list(`cprospect:${catId}:`);
@@ -257,7 +251,7 @@ const getFallbackResponse = (msgs, sys, prospect) => {
   return contextualReplies[Math.floor(Math.random() * contextualReplies.length)];
 };
 
-// ─── Responsive Design Styles ───────────────────────────────────────────────
+// ─── Responsive & Pearl Button Global Styles ────────────────────────────────
 const css = `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 @keyframes waveBar{from{transform:scaleY(.2)}to{transform:scaleY(1)}}
@@ -265,17 +259,120 @@ const css = `
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .msg{animation:fadeUp .28s ease forwards}
 
-.btn{display:flex;align-items:center;justify-content:center;gap:6px;border:none;font-family:inherit;cursor:pointer;transition:all .18s ease}
-.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
-.btn:not(:disabled):active{transform:scale(.97)}
-.g{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(240,240,245,.8);border-radius:12px}
-.g:not(:disabled):hover{background:rgba(255,255,255,.12)}
-.p{background:rgba(129,140,248,.16);border:1px solid rgba(129,140,248,.35);color:#818CF8;border-radius:12px;font-weight:600}
-.p:not(:disabled):hover{background:rgba(129,140,248,.26);border-color:rgba(129,140,248,.55)}
-.d{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.22);color:#FCA5A5;border-radius:12px}
-.d:not(:disabled):hover{background:rgba(239,68,68,.2)}
+/* Pearl Button Global CSS override for .btn elements */
+.btn {
+  --radius: 100px;
+  outline: none;
+  cursor: pointer;
+  border: 0;
+  position: relative;
+  border-radius: var(--radius);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-weight: 600;
+  user-select: none;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0.25rem 0.6rem rgba(255, 255, 255, 0.25),
+    inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.8),
+    inset 0 -0.3rem 0.7rem var(--btn-glow, rgba(129, 140, 248, 0.35)),
+    0 0.8rem 1.5rem rgba(0, 0, 0, 0.4),
+    0 0.4rem 0.6rem -0.2rem rgba(0, 0, 0, 0.8);
+}
 
-/* Responsive Grids & Layouts */
+.btn::before {
+  content: "";
+  position: absolute;
+  left: -15%;
+  right: -15%;
+  bottom: 25%;
+  top: -100%;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.14);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.btn::after {
+  content: "";
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 10%;
+  bottom: 40%;
+  border-radius: 22px 22px 0 0;
+  box-shadow: inset 0 8px 8px -6px rgba(255, 255, 255, 0.7);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(0, 0, 0, 0) 60%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.btn.p {
+  background-color: #0b0c16;
+  color: #ffffff;
+  --btn-glow: rgba(129, 140, 248, 0.45);
+  --btn-border-glow: rgba(129, 140, 248, 0.35);
+}
+
+.btn.g {
+  background-color: #0d0e15;
+  color: rgba(240, 240, 245, 0.85);
+  --btn-glow: rgba(255, 255, 255, 0.15);
+  --btn-border-glow: rgba(255, 255, 255, 0.15);
+}
+
+.btn.d {
+  background-color: #1c0a0a;
+  color: #fca5a5;
+  --btn-glow: rgba(239, 68, 68, 0.4);
+  --btn-border-glow: rgba(239, 68, 68, 0.3);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(40%);
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.btn:hover:not(:disabled) {
+  box-shadow:
+    inset 0 0.3rem 0.6rem rgba(255, 255, 255, 0.45),
+    inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.8),
+    inset 0 -0.4rem 0.9rem var(--btn-glow, rgba(129, 140, 248, 0.5)),
+    0 1.2rem 2rem rgba(0, 0, 0, 0.5),
+    0 0.5rem 0.8rem -0.2rem var(--btn-border-glow, rgba(129, 140, 248, 0.3));
+  transform: translateY(-2px);
+}
+
+.btn:hover:not(:disabled)::before {
+  transform: translateY(-6%);
+}
+
+.btn:hover:not(:disabled)::after {
+  opacity: 0.55;
+  transform: translateY(4%);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 0.2rem 0.4rem rgba(255, 255, 255, 0.5),
+    inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.9),
+    inset 0 -0.3rem 0.7rem var(--btn-glow, rgba(129, 140, 248, 0.4)),
+    0 0.4rem 0.8rem rgba(0, 0, 0, 0.4);
+}
+
+/* Grids & Containers */
 .cat-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
@@ -310,7 +407,6 @@ const css = `
 .txin{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#F0F0F5;font-family:inherit;font-size:15px;padding:12px 16px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
 .txin:focus{border-color:rgba(129,140,248,.5);box-shadow:0 0 0 3px rgba(129,140,248,.1)}
 .txin::placeholder{color:rgba(240,240,245,.28)}
-.txin:disabled{opacity:.5}
 
 .txarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#F0F0F5;font-family:inherit;font-size:14px;padding:12px 16px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;resize:vertical;min-height:80px;line-height:1.6}
 .txarea:focus{border-color:rgba(129,140,248,.5);box-shadow:0 0 0 3px rgba(129,140,248,.1)}
@@ -329,7 +425,6 @@ const css = `
 .sug-box{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:10px 14px;margin-top:6px}
 .live-tip{background:rgba(129,140,248,.08);border:1px solid rgba(129,140,248,.2);border-radius:8px;padding:8px 12px;margin-top:6px;font-size:12px;color:rgba(200,205,255,.85);line-height:1.5}
 
-/* Responsive Call Layout */
 .call-wrap {
   height: 100vh;
   height: -webkit-fill-available;
@@ -344,7 +439,7 @@ const css = `
     height: 85vh;
     max-height: 800px;
     margin: 30px auto;
-    border-radius: 20px;
+    border-radius: 24px;
     border: 1px solid rgba(255,255,255,.09);
     box-shadow: 0 20px 50px rgba(0,0,0,0.6);
     display: grid;
@@ -368,7 +463,6 @@ const css = `
   }
 }
 
-/* Two-column layout helper for scorecard & history */
 .two-col-layout {
   display: flex;
   flex-direction: column;
@@ -442,11 +536,13 @@ function TopNav({onHistory, onApiKey, hasKey}) {
         Cold Call Trainer
       </div>
       <div style={{display:"flex",gap:"10px"}}>
-        <button className="btn g" onClick={onApiKey} style={{padding:"8px 14px",fontSize:"12px"}}>
+        <PearlButton variant="secondary" size="small" onClick={onApiKey}>
           <span style={{width:"7px",height:"7px",borderRadius:"50%",background:hasKey?"#22C55E":"#F59E0B",marginRight:"4px"}}/>
           {hasKey ? "API Key Set" : "Add API Key"}
-        </button>
-        <button className="btn g" onClick={onHistory} style={{padding:"8px 16px",fontSize:"13px"}}>Call History</button>
+        </PearlButton>
+        <PearlButton variant="secondary" size="small" onClick={onHistory}>
+          Call History
+        </PearlButton>
       </div>
     </div>
   );
@@ -833,7 +929,9 @@ Return ONLY valid JSON, no markdown:
 
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px",width:"100%"}}>
         <div style={{fontSize:"12px",letterSpacing:".08em",color:"rgba(240,240,245,.5)",textTransform:"uppercase",fontWeight:"700"}}>Select Product Industry</div>
-        <button className="btn p" onClick={()=>setScreen("customCat")} style={{padding:"8px 14px",fontSize:"12px"}}>+ Custom Category</button>
+        <PearlButton variant="primary" size="small" onClick={()=>setScreen("customCat")}>
+          + Custom Category
+        </PearlButton>
       </div>
       
       <div className="cat-grid" style={{marginBottom:"24px"}}>
@@ -875,8 +973,8 @@ Return ONLY valid JSON, no markdown:
             </p>
             <input className="txin" value={keyInput} onChange={e=>setKeyInput(e.target.value)} placeholder="sk-ant-api03-..." style={{marginBottom:"18px"}}/>
             <div style={{display:"flex",gap:"10px"}}>
-              <button className="btn g" onClick={()=>setShowKeyModal(false)} style={{flex:1,padding:"11px"}}>Cancel</button>
-              <button className="btn p" onClick={()=>saveApiKey(keyInput)} style={{flex:1,padding:"11px"}}>Save Key</button>
+              <PearlButton variant="secondary" onClick={()=>setShowKeyModal(false)} style={{flex:1}}>Cancel</PearlButton>
+              <PearlButton variant="primary" onClick={()=>saveApiKey(keyInput)} style={{flex:1}}>Save Key</PearlButton>
             </div>
           </Glass>
         </div>
@@ -884,18 +982,17 @@ Return ONLY valid JSON, no markdown:
     </W>
   );
 
-  // ── CALL SCREEN (Fully Responsive Layout) ───────────────────────────────
+  // ── CALL SCREEN ───────────────────────────────────────────────────────────
   if(screen==="call") return (
     <>
       <style>{css}</style>
       <div style={{minHeight:"100vh",background:BG,color:"#F0F0F5",fontFamily:FONT,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"10px"}}>
         <div className="call-wrap">
           
-          {/* Desktop Left Sidebar / Mobile Header Container */}
           <div className="call-sidebar" style={{background:CBG}}>
             <div>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"20px"}}>
-                <button className="btn g" onClick={endCall} style={{padding:"6px 12px",fontSize:"12px"}}>← Exit</button>
+                <PearlButton variant="secondary" size="small" onClick={endCall}>← Exit</PearlButton>
                 <StatusPill status={status}/>
               </div>
 
@@ -915,12 +1012,11 @@ Return ONLY valid JSON, no markdown:
             </div>
 
             <div style={{display:"flex",flexDirection:"column",gap:"10px",width:"100%"}}>
-              {voiceOk&&<button onClick={toggleMic} className={`btn g${listen?" mon":""}`} disabled={loading||aiSpeak} style={{width:"100%",padding:"12px",fontSize:"13px"}}>{listen?"Stop Listening":"Voice Speak"}</button>}
-              <button onClick={endCall} className="btn d" disabled={loading} style={{width:"100%",padding:"12px",fontSize:"13px"}}>End Call & Score</button>
+              {voiceOk&&<PearlButton variant="secondary" onClick={toggleMic} disabled={loading||aiSpeak} style={{width:"100%"}}>{listen?"Stop Listening":"Voice Speak"}</PearlButton>}
+              <PearlButton variant="danger" onClick={endCall} disabled={loading} style={{width:"100%"}}>End Call & Score</PearlButton>
             </div>
           </div>
 
-          {/* Main Chat Area */}
           <div className="call-main">
             <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(255,255,255,.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div style={{fontSize:"13px",fontWeight:"600",color:"rgba(240,240,245,.6)",letterSpacing:".04em"}}>LIVE TRANSCRIPT</div>
@@ -956,7 +1052,7 @@ Return ONLY valid JSON, no markdown:
             <div style={{padding:"16px",borderTop:"1px solid rgba(255,255,255,.07)",background:"rgba(0,0,0,.2)"}}>
               <div style={{display:"flex",gap:"10px"}}>
                 <input className="txin" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send(input)} placeholder={listen?"Listening to your voice...":aiSpeak?"Prospect speaking...":"Type your reply and press Enter..."} disabled={loading||aiSpeak||listen}/>
-                <button className="btn p" onClick={()=>send(input)} disabled={loading||aiSpeak||listen||!input.trim()} style={{padding:"0 24px",fontSize:"14px",whiteSpace:"nowrap"}}>Send</button>
+                <PearlButton variant="primary" onClick={()=>send(input)} disabled={loading||aiSpeak||listen||!input.trim()} style={{whiteSpace:"nowrap"}}>Send</PearlButton>
               </div>
             </div>
           </div>
@@ -971,13 +1067,13 @@ Return ONLY valid JSON, no markdown:
     const list = [...(PROSPECTS[cat?.id]||[]), ...savedProspects];
     return (
       <W maxW="1000px">
-        <button className="btn g" onClick={goHome} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← Home</button>
+        <PearlButton variant="secondary" size="small" onClick={goHome} style={{alignSelf:"flex-start",marginBottom:"20px"}}>← Home</PearlButton>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:"24px",width:"100%"}}>
           <div>
             <div style={{fontSize:"12px",letterSpacing:".08em",color:"#818CF8",textTransform:"uppercase",fontWeight:"700",marginBottom:"4px"}}>{cat?.label}</div>
             <h2 style={{fontSize:"28px",fontWeight:"700",margin:0}}>Select a Prospect</h2>
           </div>
-          <button className="btn p" onClick={()=>setScreen("customProspect")} style={{padding:"10px 16px",fontSize:"13px"}}>+ Custom Prospect</button>
+          <PearlButton variant="primary" size="small" onClick={()=>setScreen("customProspect")}>+ Custom Prospect</PearlButton>
         </div>
 
         <div className="prospect-grid" style={{marginBottom:"24px"}}>
@@ -1000,7 +1096,7 @@ Return ONLY valid JSON, no markdown:
     );
   }
 
-  // ── SCORECARD SCREEN (Responsive Grid) ──────────────────────────────────
+  // ── SCORECARD SCREEN ─────────────────────────────────────────────────────
   if(screen==="scorecard") {
     const v=VCS[score?.verdict]||VCS["Good call"];
     const scoreCats=[
@@ -1049,19 +1145,19 @@ Return ONLY valid JSON, no markdown:
           )}
         </div>
 
-        <div style={{display:"flex",gap:"12px",width:"100%",maxWidth:"500px",margin:"0 auto"}}>
-          <button className="btn g" onClick={goHome} style={{flex:1,padding:"14px",fontSize:"14px"}}>Home</button>
-          <button className="btn g" onClick={()=>setScreen("prospects")} style={{flex:1,padding:"14px",fontSize:"14px"}}>Change Prospect</button>
-          <button className="btn p" onClick={()=>startCall(prospect)} style={{flex:1.5,padding:"14px",fontSize:"14px"}}>Try Again</button>
+        <div style={{display:"flex",gap:"12px",width:"100%",maxWidth:"520px",margin:"0 auto"}}>
+          <PearlButton variant="secondary" onClick={goHome} style={{flex:1}}>Home</PearlButton>
+          <PearlButton variant="secondary" onClick={()=>setScreen("prospects")} style={{flex:1}}>Change Prospect</PearlButton>
+          <PearlButton variant="primary" onClick={()=>startCall(prospect)} style={{flex:1.5}}>Try Again</PearlButton>
         </div>
       </W>
     );
   }
 
-  // ── HISTORY SCREEN (Responsive Split) ───────────────────────────────────
+  // ── HISTORY SCREEN ───────────────────────────────────────────────────────
   if(screen==="history") return (
     <W maxW="1000px">
-      <button className="btn g" onClick={goHome} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← Home</button>
+      <PearlButton variant="secondary" size="small" onClick={goHome} style={{alignSelf:"flex-start",marginBottom:"20px"}}>← Home</PearlButton>
       <div style={{marginBottom:"24px",width:"100%"}}>
         <h2 style={{fontSize:"28px",fontWeight:"700",margin:0}}>Call History & Insights</h2>
       </div>
@@ -1071,7 +1167,9 @@ Return ONLY valid JSON, no markdown:
           <Glass style={{padding:"22px",marginBottom:"24px",width:"100%"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"14px"}}>
               <span style={{fontSize:"12px",fontWeight:"700",color:"#818CF8",textTransform:"uppercase",letterSpacing:".06em"}}>Aggregate Performance Analysis</span>
-              <button className="btn p" onClick={generateInsights} disabled={insLoad} style={{padding:"8px 14px",fontSize:"12px"}}>{insLoad?"Analyzing...":"Generate Insights"}</button>
+              <PearlButton variant="primary" size="small" onClick={generateInsights} disabled={insLoad}>
+                {insLoad?"Analyzing...":"Generate Insights"}
+              </PearlButton>
             </div>
             {insight ? (
               <div style={{fontSize:"14px",color:"rgba(240,240,245,.85)",lineHeight:1.65}}>{insight}</div>
@@ -1097,11 +1195,13 @@ Return ONLY valid JSON, no markdown:
           </div>
 
           {!resetConfirm ? (
-            <button className="btn d" onClick={()=>setResetConfirm(true)} style={{width:"100%",maxWidth:"300px",margin:"0 auto",padding:"12px",fontSize:"13px"}}>Reset Call History</button>
+            <PearlButton variant="danger" size="small" onClick={()=>setResetConfirm(true)} style={{width:"100%",maxWidth:"300px",margin:"0 auto"}}>
+              Reset Call History
+            </PearlButton>
           ) : (
             <div style={{display:"flex",gap:"10px",width:"100%",maxWidth:"300px",margin:"0 auto"}}>
-              <button className="btn g" onClick={()=>setResetConfirm(false)} style={{flex:1,padding:"12px"}}>Cancel</button>
-              <button className="btn d" onClick={resetHistory} style={{flex:1,padding:"12px"}}>Confirm Reset</button>
+              <PearlButton variant="secondary" onClick={()=>setResetConfirm(false)} style={{flex:1}}>Cancel</PearlButton>
+              <PearlButton variant="danger" onClick={resetHistory} style={{flex:1}}>Confirm Reset</PearlButton>
             </div>
           )}
         </>
@@ -1114,7 +1214,7 @@ Return ONLY valid JSON, no markdown:
   // ── CALL DETAIL SCREEN ────────────────────────────────────────────────────
   if(screen==="detail"&&detailCall) return (
     <W maxW="900px">
-      <button className="btn g" onClick={()=>setScreen("history")} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← History</button>
+      <PearlButton variant="secondary" size="small" onClick={()=>setScreen("history")} style={{alignSelf:"flex-start",marginBottom:"20px"}}>← History</PearlButton>
       
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"20px",width:"100%"}}>
         <div>
@@ -1138,9 +1238,9 @@ Return ONLY valid JSON, no markdown:
       <div style={{width:"100%",marginBottom:"24px"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}}>
           <span style={{fontSize:"12px",fontWeight:"700",color:"rgba(240,240,245,.5)",textTransform:"uppercase"}}>Full Conversation & Recommendations</span>
-          <button className="btn p" onClick={generateSuggestions} disabled={sugLoading} style={{padding:"8px 16px",fontSize:"13px"}}>
+          <PearlButton variant="primary" size="small" onClick={generateSuggestions} disabled={sugLoading}>
             {sugLoading?"Generating...":"Best Closer Alternatives"}
-          </button>
+          </PearlButton>
         </div>
 
         <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
@@ -1172,7 +1272,7 @@ Return ONLY valid JSON, no markdown:
   // ── CUSTOM CATEGORY FORM ──────────────────────────────────────────────────
   if(screen==="customCat") return (
     <W maxW="600px">
-      <button className="btn g" onClick={goHome} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← Cancel</button>
+      <PearlButton variant="secondary" size="small" onClick={goHome} style={{alignSelf:"flex-start",marginBottom:"20px"}}>← Cancel</PearlButton>
       <Glass style={{width:"100%",padding:"28px"}}>
         <h2 style={{fontSize:"22px",fontWeight:"700",marginBottom:"18px"}}>Create Custom Product Category</h2>
         <div className="fl" style={{marginBottom:"16px"}}>
@@ -1183,7 +1283,7 @@ Return ONLY valid JSON, no markdown:
           <label className="lbl">Target Audience / Persona</label>
           <input className="txin" value={ccForm.target} onChange={e=>setCcForm({...ccForm,target:e.target.value})} placeholder="e.g. VP Operations at Logistics Companies"/>
         </div>
-        <button className="btn p" onClick={handleSubmitCc} disabled={!ccForm.product.trim()} style={{width:"100%",padding:"14px",fontSize:"14px"}}>Create Category</button>
+        <PearlButton variant="primary" onClick={handleSubmitCc} disabled={!ccForm.product.trim()} style={{width:"100%"}}>Create Category</PearlButton>
       </Glass>
     </W>
   );
@@ -1191,7 +1291,7 @@ Return ONLY valid JSON, no markdown:
   // ── CUSTOM PROSPECT FORM ──────────────────────────────────────────────────
   if(screen==="customProspect") return (
     <W maxW="700px">
-      <button className="btn g" onClick={()=>setScreen("prospects")} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← Cancel</button>
+      <PearlButton variant="secondary" size="small" onClick={()=>setScreen("prospects")} style={{alignSelf:"flex-start",marginBottom:"20px"}}>← Cancel</PearlButton>
       <Glass style={{width:"100%",padding:"28px"}}>
         <h2 style={{fontSize:"22px",fontWeight:"700",marginBottom:"18px"}}>Create Custom Prospect Persona</h2>
         <div className="cp-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px",marginBottom:"14px"}}>
@@ -1233,7 +1333,7 @@ Return ONLY valid JSON, no markdown:
           <textarea className="txarea" value={cpForm.context} onChange={e=>setCpForm({...cpForm,context:e.target.value})} placeholder="e.g. Skeptical buyer who only cares about ROI metrics..."/>
         </div>
 
-        <button className="btn p" onClick={handleSubmitCp} disabled={!cpForm.name.trim()||!cpForm.title.trim()} style={{width:"100%",padding:"14px",fontSize:"14px"}}>Start Call with Custom Prospect</button>
+        <PearlButton variant="primary" onClick={handleSubmitCp} disabled={!cpForm.name.trim()||!cpForm.title.trim()} style={{width:"100%"}}>Start Call with Custom Prospect</PearlButton>
       </Glass>
     </W>
   );
