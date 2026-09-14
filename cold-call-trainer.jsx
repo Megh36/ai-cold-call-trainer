@@ -275,7 +275,7 @@ const css = `
   font-size: 22px;
   font-weight: 800;
   letter-spacing: 0.03em;
-  padding: 28px 72px;
+  padding: 28px 72px 28px 100px;
   min-height: 78px;
   color: #ffffff !important;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95), 0 0 12px rgba(255, 255, 255, 0.2);

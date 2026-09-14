@@ -101,13 +101,13 @@ export const PearlButton: React.FC<PearlButtonProps> = ({
           justify-content: center;
         }
 
-        /* Enormous Extra Padding on all sides & Larger Ultra-Clear Font Sizes */
+        /* Enormous Extra Padding on all sides & Larger Ultra-Clear Font Sizes (Extra Left Padding) */
         .pearl-button-sm {
           min-height: 62px;
         }
         .pearl-button-sm .wrap {
           font-size: 18px;
-          padding: 20px 48px;
+          padding: 20px 48px 20px 68px;
         }
 
         .pearl-button-md {
@@ -115,7 +115,7 @@ export const PearlButton: React.FC<PearlButtonProps> = ({
         }
         .pearl-button-md .wrap {
           font-size: 22px;
-          padding: 28px 72px;
+          padding: 28px 72px 28px 100px;
         }
 
         .pearl-button-lg {
@@ -123,7 +123,7 @@ export const PearlButton: React.FC<PearlButtonProps> = ({
         }
         .pearl-button-lg .wrap {
           font-size: 26px;
-          padding: 36px 96px;
+          padding: 36px 96px 36px 132px;
         }
 
         .pearl-button .wrap p span:nth-child(2) {
