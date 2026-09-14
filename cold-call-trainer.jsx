@@ -259,7 +259,7 @@ const css = `
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .msg{animation:fadeUp .28s ease forwards}
 
-/* Pearl Button Global CSS override for .btn elements with increased padding & improved font sizes */
+/* Pearl Button Global CSS override for .btn elements - Larger Buttons & High Contrast Bold Text */
 .btn {
   --radius: 100px;
   outline: none;
@@ -272,18 +272,21 @@ const css = `
   align-items: center;
   justify-content: center;
   font-family: inherit;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  padding: 14px 28px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  padding: 28px 72px;
+  min-height: 78px;
+  color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95), 0 0 12px rgba(255, 255, 255, 0.2);
   user-select: none;
   overflow: hidden;
   box-shadow:
-    inset 0 0.3rem 0.7rem rgba(255, 255, 255, 0.3),
-    inset 0 -0.15rem 0.35rem rgba(0, 0, 0, 0.85),
-    inset 0 -0.35rem 0.8rem var(--btn-glow, rgba(129, 140, 248, 0.4)),
-    0 1rem 2rem rgba(0, 0, 0, 0.45),
-    0 0.5rem 0.8rem -0.2rem rgba(0, 0, 0, 0.85);
+    inset 0 0.4rem 0.8rem rgba(255, 255, 255, 0.35),
+    inset 0 -0.2rem 0.4rem rgba(0, 0, 0, 0.9),
+    inset 0 -0.45rem 1rem var(--btn-glow, rgba(129, 140, 248, 0.5)),
+    0 1.2rem 2.5rem rgba(0, 0, 0, 0.5),
+    0 0.6rem 1rem -0.2rem rgba(0, 0, 0, 0.9);
 }
 
 .btn::before {
@@ -294,7 +297,7 @@ const css = `
   bottom: 25%;
   top: -100%;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.16);
+  background-color: rgba(255, 255, 255, 0.18);
   transition: all 0.3s ease;
   pointer-events: none;
 }
@@ -307,10 +310,10 @@ const css = `
   top: 10%;
   bottom: 40%;
   border-radius: 22px 22px 0 0;
-  box-shadow: inset 0 10px 10px -6px rgba(255, 255, 255, 0.75);
+  box-shadow: inset 0 12px 12px -6px rgba(255, 255, 255, 0.8);
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.45) 0%,
     rgba(0, 0, 0, 0) 60%,
     rgba(0, 0, 0, 0) 100%
   );
@@ -319,24 +322,24 @@ const css = `
 }
 
 .btn.p {
-  background-color: #0b0c16;
-  color: #ffffff;
-  --btn-glow: rgba(129, 140, 248, 0.45);
-  --btn-border-glow: rgba(129, 140, 248, 0.35);
+  background-color: #0f1124;
+  color: #ffffff !important;
+  --btn-glow: rgba(129, 140, 248, 0.6);
+  --btn-border-glow: rgba(129, 140, 248, 0.5);
 }
 
 .btn.g {
-  background-color: #0d0e15;
-  color: rgba(240, 240, 245, 0.95);
-  --btn-glow: rgba(255, 255, 255, 0.18);
-  --btn-border-glow: rgba(255, 255, 255, 0.18);
+  background-color: #111320;
+  color: #ffffff !important;
+  --btn-glow: rgba(255, 255, 255, 0.25);
+  --btn-border-glow: rgba(255, 255, 255, 0.25);
 }
 
 .btn.d {
-  background-color: #1c0a0a;
-  color: #fca5a5;
-  --btn-glow: rgba(239, 68, 68, 0.45);
-  --btn-border-glow: rgba(239, 68, 68, 0.35);
+  background-color: #240808;
+  color: #ffffff !important;
+  --btn-glow: rgba(239, 68, 68, 0.55);
+  --btn-border-glow: rgba(239, 68, 68, 0.45);
 }
 
 .btn:disabled {
@@ -349,12 +352,12 @@ const css = `
 
 .btn:hover:not(:disabled) {
   box-shadow:
-    inset 0 0.35rem 0.7rem rgba(255, 255, 255, 0.5),
-    inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.85),
-    inset 0 -0.45rem 1rem var(--btn-glow, rgba(129, 140, 248, 0.55)),
-    0 1.4rem 2.2rem rgba(0, 0, 0, 0.55),
-    0 0.6rem 1rem -0.2rem var(--btn-border-glow, rgba(129, 140, 248, 0.35));
-  transform: translateY(-2px);
+    inset 0 0.4rem 0.8rem rgba(255, 255, 255, 0.6),
+    inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.9),
+    inset 0 -0.5rem 1.1rem var(--btn-glow, rgba(129, 140, 248, 0.65)),
+    0 1.6rem 2.8rem rgba(0, 0, 0, 0.6),
+    0 0.8rem 1.2rem -0.2rem var(--btn-border-glow, rgba(129, 140, 248, 0.45));
+  transform: translateY(-3px);
 }
 
 .btn:hover:not(:disabled)::before {
@@ -362,7 +365,7 @@ const css = `
 }
 
 .btn:hover:not(:disabled)::after {
-  opacity: 0.6;
+  opacity: 0.65;
   transform: translateY(4%);
 }
 
