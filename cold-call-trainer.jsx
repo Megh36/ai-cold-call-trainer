@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { PearlButton } from "./components/ui/pearl-button";
-import CharacterWave from "./components/ui/character-wave";
+import ProspectWave from "./components/ui/prospect-wave";
 
 const CATEGORIES = [
   { id:"saas",       label:"SaaS / Software" },
@@ -497,6 +497,149 @@ const css = `
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:4px}
+
+/* ProspectWave 3D Component Styles */
+.wave-stage {
+  --pointer-x: 50%;
+  --pointer-y: 50%;
+  position: relative;
+  width: 100%;
+  height: clamp(600px, 70vh, 750px);
+  overflow: hidden;
+  isolation: isolate;
+  background: transparent;
+  perspective: 1100px;
+  touch-action: none;
+  cursor: grab;
+  border-radius: 20px;
+}
+.wave-stage:active { cursor: grabbing; }
+.wave-deck {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  transform-style: preserve-3d;
+}
+.wave-card {
+  --focus: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(220px, 20vw, 280px);
+  aspect-ratio: 0.55;
+  padding: clamp(12px, 1.2vw, 18px);
+  border: 0;
+  border-radius: clamp(15px, 1.5vw, 24px);
+  color: #f3f0e9;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), transparent 34%),
+    var(--card-color),
+    rgba(15, 17, 36, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 calc(7px + var(--focus) * 20px) calc(13px + var(--focus) * 40px)
+      rgba(0, 0, 0, calc(0.25 + var(--focus) * 0.34)),
+    inset 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.24);
+  appearance: none;
+  outline: none;
+  transform-style: preserve-3d;
+  will-change: transform, opacity, filter;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+.wave-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, calc(0.035 + var(--focus) * 0.12));
+  border-radius: inherit;
+  pointer-events: none;
+}
+.wave-card:focus-visible::after {
+  border-color: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+}
+.wave-portrait {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: clamp(10px, 1.1vw, 16px);
+  background: rgba(8, 9, 9, 0.24);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 -16px 28px rgba(0, 0, 0, 0.13);
+  transform: translateZ(7px);
+  display: block;
+}
+.wave-identity {
+  display: grid;
+  place-items: center;
+  gap: clamp(4px, 0.4vw, 6px);
+  margin-top: clamp(10px, 1.1vw, 16px);
+  text-align: center;
+  transform: translateZ(8px);
+}
+.wave-name {
+  max-width: 100%;
+  color: rgba(255, 255, 255, 0.93);
+  font-size: clamp(16px, 1.4vw, 22px);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+}
+.wave-role {
+  max-width: 100%;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: clamp(13px, 1.1vw, 17px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wave-desc {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: clamp(11.5px, 0.95vw, 14.5px);
+  line-height: 1.45;
+  margin-top: clamp(8px, 0.8vw, 12px);
+  text-align: left;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 100%;
+}
+.wave-follow {
+  margin-top: clamp(5px, 0.5vw, 8px);
+  padding: clamp(4px, 0.4vw, 6px) clamp(12px, 1.2vw, 18px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.42);
+  font-size: clamp(11px, 0.9vw, 14px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.wave-card[aria-current="true"] .wave-follow {
+  color: #fff;
+  background: #818CF8;
+  border-color: #818CF8;
+}
+@media (max-width: 680px) {
+  .wave-stage { height: 75vh; min-height: 600px; }
+  .wave-card { width: clamp(220px, 60vw, 280px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wave-card { will-change: auto; }
+}
 `;
 
 const FONT = "-apple-system,BlinkMacSystemFont,'Plus Jakarta Sans','Inter',sans-serif";
@@ -575,9 +718,6 @@ function Glass({children,padding="26px",style={}}) {
 function W({children,maxW="1100px"}) {
   return (
     <div style={{minHeight:"100vh",background:BG,color:"#F0F0F5",fontFamily:FONT,display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 24px 56px",position:"relative"}}>
-      <div style={{position: "fixed", inset: 0, zIndex: 0, opacity: 0.45, pointerEvents: "none"}}>
-        <CharacterWave hue={250} opacity={0.7} saturation={1.3} speed={0.8} />
-      </div>
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <div style={{width:"100%",maxWidth:maxW,position:"relative",zIndex:1}}>{children}</div>
     </div>
@@ -1096,21 +1236,8 @@ Return ONLY valid JSON, no markdown:
           <PearlButton variant="primary" size="medium" onClick={()=>setScreen("customProspect")}>+ Custom Prospect</PearlButton>
         </div>
 
-        <div className="prospect-grid" style={{marginBottom:"28px"}}>
-          {list.map((p,i)=>(
-            <div key={i} className="p-row" onClick={()=>startCall(p)}>
-              <Av name={p.name} size={52}/>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"4px"}}>
-                  <span style={{fontWeight:"700",fontSize:"17px",color:"rgba(240,240,245,.95)"}}>{p.name}</span>
-                  <DBadge diff={p.diff||p.difficulty}/>
-                </div>
-                <div style={{color:"rgba(240,240,245,.5)",fontSize:"14px"}}>{p.spec||p.title}</div>
-                {p.ctx && <div style={{color:"rgba(240,240,245,.35)",fontSize:"13px",marginTop:"8px",lineHeight:1.45,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{p.ctx}</div>}
-              </div>
-              <span style={{color:"#818CF8",fontSize:"16px",fontWeight:"700"}}>Call →</span>
-            </div>
-          ))}
+        <div style={{width: "100%", maxWidth: "900px", margin: "0 auto", marginTop: "20px"}}>
+          <ProspectWave prospects={list} onSelect={startCall} />
         </div>
       </W>
     );
