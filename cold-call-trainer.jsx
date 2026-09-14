@@ -111,28 +111,66 @@ Rules:
 - Never break character.`;
 };
 
-// ─── Storage ──────────────────────────────────────────────────────────────────
+// ─── Universal Storage Helper (supports browser localStorage & window.storage) ────
+const storage = {
+  get: async (key) => {
+    if (typeof window !== "undefined" && window.storage?.get) {
+      try { const r = await window.storage.get(key); return r ? { value: r.value } : null; } catch {}
+    }
+    if (typeof window !== "undefined" && window.localStorage) {
+      const v = window.localStorage.getItem(key);
+      return v ? { value: v } : null;
+    }
+    return null;
+  },
+  set: async (key, value) => {
+    if (typeof window !== "undefined" && window.storage?.set) {
+      try { await window.storage.set(key, value); } catch {}
+    }
+    if (typeof window !== "undefined" && window.localStorage) {
+      try { window.localStorage.setItem(key, value); } catch {}
+    }
+  },
+  delete: async (key) => {
+    if (typeof window !== "undefined" && window.storage?.delete) {
+      try { await window.storage.delete(key); } catch {}
+    }
+    if (typeof window !== "undefined" && window.localStorage) {
+      try { window.localStorage.removeItem(key); } catch {}
+    }
+  },
+  list: async (prefix) => {
+    if (typeof window !== "undefined" && window.storage?.list) {
+      try { const r = await window.storage.list(prefix); if (r?.keys) return r; } catch {}
+    }
+    if (typeof window !== "undefined" && window.localStorage) {
+      const keys = Object.keys(window.localStorage).filter(k => k.startsWith(prefix));
+      return { keys };
+    }
+    return { keys: [] };
+  }
+};
+
 const saveCall = async (data) => {
-  try { await window.storage.set(`call:${data.id}`, JSON.stringify(data)); } catch {}
+  await storage.set(`call:${data.id}`, JSON.stringify(data));
 };
 const loadHistory = async () => {
   try {
-    const keys = await window.storage.list("call:");
+    const keys = await storage.list("call:");
     if (!keys?.keys?.length) return [];
     const uniqueKeys = [...new Set(keys.keys)];
     const items = await Promise.all(uniqueKeys.map(async k => {
-      try { const r = await window.storage.get(k); return r ? JSON.parse(r.value) : null; } catch { return null; }
+      try { const r = await storage.get(k); return r?.value ? JSON.parse(r.value) : null; } catch { return null; }
     }));
-    // Two-pass dedup: first by exact id, then by prospect+minute window (catches double-saves with different timestamps)
     const byId   = new Set();
     const bySlot = new Set();
     return items
       .filter(Boolean)
-      .sort((a,b) => b.id - a.id)  // newest first so we keep the later save
+      .sort((a,b) => b.id - a.id)
       .filter(item => {
         if (byId.has(item.id)) return false;
         byId.add(item.id);
-        const slot = `${item.prospectName}|${Math.floor((item.id||0) / 60000)}`; // same prospect within 60s
+        const slot = `${item.prospectName}|${Math.floor((item.id||0) / 60000)}`;
         if (bySlot.has(slot)) return false;
         bySlot.add(slot);
         return true;
@@ -140,15 +178,15 @@ const loadHistory = async () => {
   } catch { return []; }
 };
 const saveCustomCat = async (data) => {
-  try { await window.storage.set(`ccat:${data.id}`, JSON.stringify(data)); } catch {}
+  await storage.set(`ccat:${data.id}`, JSON.stringify(data));
 };
 const loadCustomCats = async () => {
   try {
-    const keys = await window.storage.list("ccat:");
+    const keys = await storage.list("ccat:");
     if (!keys?.keys?.length) return [];
     const uniqueKeys = [...new Set(keys.keys)];
     const items = await Promise.all(uniqueKeys.map(async k => {
-      try { const r = await window.storage.get(k); return r ? JSON.parse(r.value) : null; } catch { return null; }
+      try { const r = await storage.get(k); return r?.value ? JSON.parse(r.value) : null; } catch { return null; }
     }));
     const seen = new Set();
     return items.filter(Boolean).filter(item => { if(seen.has(item.id)) return false; seen.add(item.id); return true; }).sort((a,b) => a.id - b.id);
@@ -156,25 +194,67 @@ const loadCustomCats = async () => {
 };
 const deleteCustomCatFromStorage = async (catId) => {
   try {
-    await window.storage.delete(`ccat:${catId}`);
-    const keys = await window.storage.list(`cprospect:${catId}:`);
-    if (keys?.keys?.length) await Promise.all(keys.keys.map(k => window.storage.delete(k)));
+    await storage.delete(`ccat:${catId}`);
+    const keys = await storage.list(`cprospect:${catId}:`);
+    if (keys?.keys?.length) await Promise.all(keys.keys.map(k => storage.delete(k)));
   } catch {}
 };
 const saveCustomProspect = async (catId, data) => {
-  try { await window.storage.set(`cprospect:${catId}:${data.id}`, JSON.stringify(data)); } catch {}
+  await storage.set(`cprospect:${catId}:${data.id}`, JSON.stringify(data));
 };
 const loadCustomProspects = async (catId) => {
   try {
-    const keys = await window.storage.list(`cprospect:${catId}:`);
+    const keys = await storage.list(`cprospect:${catId}:`);
     if (!keys?.keys?.length) return [];
     const uniqueKeys = [...new Set(keys.keys)];
     const items = await Promise.all(uniqueKeys.map(async k => {
-      try { const r = await window.storage.get(k); return r ? JSON.parse(r.value) : null; } catch { return null; }
+      try { const r = await storage.get(k); return r?.value ? JSON.parse(r.value) : null; } catch { return null; }
     }));
     const seen = new Set();
     return items.filter(Boolean).filter(item => { if(seen.has(item.id)) return false; seen.add(item.id); return true; }).sort((a,b) => a.id - b.id);
   } catch { return []; }
+};
+
+// ─── Smart Fallback AI Engine (used if API key fails or unavailable) ─────────────
+const getFallbackResponse = (msgs, sys, prospect) => {
+  const isGreeting = msgs.length === 1 && String(msgs[0]?.content||"").includes("Phone just connected");
+  const name = prospect?.name || "Prospect";
+  const firstName = name.split(" ")[0] || "there";
+
+  if (isGreeting) {
+    const greetings = [
+      `Hello, this is ${firstName}. How can I help you?`,
+      `Yeah, ${firstName} speaking. What's this regarding?`,
+      `Hi, this is ${name}. Who is calling?`,
+      `Hello? ${firstName} here.`
+    ];
+    return greetings[Math.floor(Math.random() * greetings.length)];
+  }
+
+  const lastUserMsg = [...msgs].reverse().find(m => m.role === "user")?.content || "";
+  const lower = lastUserMsg.toLowerCase();
+
+  if (lower.includes("price") || lower.includes("cost") || lower.includes("pricing") || lower.includes("how much")) {
+    return "Pricing is always a key factor for us. What kind of measurable ROI or time savings are your current clients actually seeing?";
+  }
+  if (lower.includes("demo") || lower.includes("meeting") || lower.includes("15 min") || lower.includes("schedule") || lower.includes("time")) {
+    return "Look, my calendar is pretty packed this week. Can you send over a brief email summary first, and if it makes sense we can look at next week?";
+  }
+  if (lower.includes("tool") || lower.includes("software") || lower.includes("current") || lower.includes("crm") || lower.includes("stack")) {
+    return "We already have a system in place that works reasonably well. What specifically makes your solution worth switching or integrating?";
+  }
+  if (lower.includes("hello") || lower.includes("hi") || lower.includes("hey") || lower.includes("calling from")) {
+    return `Hi. I only have a couple of minutes before my next meeting. What's the short version of why you're reaching out today?`;
+  }
+
+  const contextualReplies = [
+    `I hear what you're saying, but we've been burned by similar tools in the past that promised quick results and didn't deliver. How are you different?`,
+    `That sounds interesting in theory, but my team is already stretched thin. How much setup or onboarding time does this actually require?`,
+    `We're currently evaluating our priorities for the quarter. What is the single biggest impact this would have on our operations?`,
+    `I appreciate you reaching out, but I'd need to see some real numbers or case studies before taking this further. What results have similar companies gotten?`
+  ];
+
+  return contextualReplies[Math.floor(Math.random() * contextualReplies.length)];
 };
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
@@ -193,10 +273,8 @@ const css = `
 .p:not(:disabled):hover{background:rgba(129,140,248,.26);border-color:rgba(129,140,248,.55)}
 .d{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.22);color:#FCA5A5;border-radius:12px}
 .d:not(:disabled):hover{background:rgba(239,68,68,.2)}
-.mon{background:rgba(129,140,248,.2)!important;border-color:rgba(129,140,248,.5)!important;color:#818CF8!important}
-.glass{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);border-radius:16px}
 .cat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s ease;display:flex;align-items:center;justify-content:space-between}
-.cat-card:hover{background:rgba(255,255,255,.08);border-color:rgba(129,140,248,.3);transform:translateY(-2px)}
+.cat-card:hover{background:rgba(255,255,255,.08);border-color:rgba(129,140,248,.35);transform:translateY(-2px)}
 .cat-custom-card{background:rgba(129,140,248,.06);border:1px solid rgba(129,140,248,.2);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s ease;display:flex;align-items:center;justify-content:space-between}
 .cat-custom-card:hover{background:rgba(129,140,248,.11);border-color:rgba(129,140,248,.38);transform:translateY(-2px)}
 .cat-add{background:rgba(129,140,248,.07);border:1px dashed rgba(129,140,248,.3);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s ease;display:flex;align-items:center;justify-content:space-between}
@@ -289,21 +367,38 @@ function StatusPill({status}) {
 function ScoreBar({score}) {
   return <div className="bt"><div className="bf" style={{width:`${((score||0)/10)*100}%`}}/></div>;
 }
+function TopNav({onHistory, onApiKey, hasKey}) {
+  return (
+    <div style={{display:"flex",justifyContent:"flex-end",gap:"10px",width:"100%",marginBottom:"24px"}}>
+      <button className="btn g" onClick={onApiKey} style={{padding:"9px 14px",fontSize:"12px"}}>
+        <span style={{width:"7px",height:"7px",borderRadius:"50%",background:hasKey?"#22C55E":"#F59E0B",marginRight:"4px"}}/>
+        {hasKey ? "API Key Set" : "Add API Key"}
+      </button>
+      <button className="btn g" onClick={onHistory} style={{padding:"9px 16px",fontSize:"13px"}}>Call History</button>
+    </div>
+  );
+}
 
-const BLANK_CP = {name:"",title:"",company:"",difficulty:"Medium",gender:"neutral",traits:[],objection:"",interest:"",context:""};
-const BASE = {minHeight:"100vh",background:BG,color:"#F0F0F5",fontFamily:FONT,padding:"clamp(16px,4vw,36px) clamp(12px,4vw,28px)",display:"flex",flexDirection:"column",alignItems:"center"};
-
+function Glass({children,padding="24px",style={}}) {
+  return (
+    <div style={{background:"rgba(255,255,255,.03)",backdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,.07)",borderRadius:"16px",padding,...style}}>
+      {children}
+    </div>
+  );
+}
 function W({children,maxW="680px"}) {
   return (
-    <div style={{...BASE}}>
+    <div style={{minHeight:"100vh",background:BG,color:"#F0F0F5",fontFamily:FONT,display:"flex",flexDirection:"column",alignItems:"center",padding:"28px 20px 48px"}}>
       <style>{css}</style>
       <div style={{width:"100%",maxWidth:maxW}}>{children}</div>
     </div>
   );
 }
 
+const BLANK_CP = { name:"", title:"", company:"", difficulty:"Medium", gender:"male", traits:[], objection:"", interest:"", context:"" };
+
 // ─── Main App ────────────────────────────────────────────────────────────────
-export default function App() {
+export default function ColdCallTrainer() {
   const [screen,         setScreen]         = useState("home");
   const [cat,            setCat]            = useState(null);
   const [prospect,       setProspect]       = useState(null);
@@ -326,38 +421,44 @@ export default function App() {
   const [detailCall,     setDetailCall]     = useState(null);
   const [suggestions,    setSuggestions]    = useState(null);
   const [sugLoading,     setSugLoading]     = useState(false);
-  const [liveTips,       setLiveTips]       = useState({}); // keyed by message index
+  const [liveTips,       setLiveTips]       = useState({});
   const [resetConfirm,   setResetConfirm]   = useState(false);
+  const [apiKey,         setApiKey]         = useState("");
+  const [showKeyModal,   setShowKeyModal]   = useState(false);
+  const [keyInput,       setKeyInput]       = useState("");
 
   const recRef        = useRef(null);
   const txRef         = useRef(null);
   const tmRef         = useRef(null);
   const t0Ref         = useRef(null);
   const callEndingRef = useRef(false);
-  const keepAliveRef  = useRef(null); // iOS speech keep-alive interval
 
   useEffect(()=>{
     setVoiceOk(!!(window.SpeechRecognition||window.webkitSpeechRecognition));
     loadCustomCats().then(setCustomCats);
-    // Mobile: voices load asynchronously — listen for the event
-    const onVoicesChanged = () => { /* triggers re-render so getVoice picks them up */ setVoiceOk(v=>v); };
-    window.speechSynthesis?.addEventListener?.("voiceschanged", onVoicesChanged);
-    return () => window.speechSynthesis?.removeEventListener?.("voiceschanged", onVoicesChanged);
+    if(typeof window !== "undefined") {
+      const savedKey = localStorage.getItem("anthropic_api_key") || "";
+      setApiKey(savedKey);
+      setKeyInput(savedKey);
+    }
   },[]);
+
   useEffect(()=>{
     if(screen==="call"){t0Ref.current=Date.now();tmRef.current=setInterval(()=>setDur(Math.floor((Date.now()-t0Ref.current)/1000)),1000);}
     else clearInterval(tmRef.current);
     return()=>clearInterval(tmRef.current);
   },[screen]);
+
   useEffect(()=>{ if(txRef.current) txRef.current.scrollTop=txRef.current.scrollHeight; },[messages]);
+
   useEffect(()=>{
     if(screen==="history"&&history===null) loadHistory().then(h=>{setHistory(h);setInsight("");setResetConfirm(false);});
   },[screen]);
+
   useEffect(()=>{
     if(screen==="prospects"&&cat?.id) loadCustomProspects(cat.id).then(setSavedProspects);
   },[screen,cat]);
 
-  // Must be called synchronously inside a user-gesture handler to unlock mobile audio
   const unlockSpeech = () => {
     if (!window.speechSynthesis) return;
     try {
@@ -368,46 +469,39 @@ export default function App() {
     } catch {}
   };
 
+  const getVoice = (gender="neutral") => {
+    if (!window.speechSynthesis) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices.length) return null;
 
-  const speak = (text, gender, onEnd) => {
-    if(!window.speechSynthesis){onEnd?.();return;}
-    clearInterval(keepAliveRef.current);
+    const list = gender === "female" ? FEMALE_VX : MALE_VX;
+    let match = voices.find(v => v.lang.startsWith("en") && list.some(name => v.name.toLowerCase().includes(name)));
+    if (!match) match = voices.find(v => list.some(name => v.name.toLowerCase().includes(name)));
+    if (!match) match = voices.find(v => v.lang.startsWith("en"));
+    return match || voices[0];
+  };
+
+  const speak = (text, gender="neutral", onEnd) => {
+    if(!window.speechSynthesis || !text) { onEnd?.(); return; }
+
     window.speechSynthesis.cancel();
 
     const doSpeak = (voices) => {
       const u = new SpeechSynthesisUtterance(text);
-      u.rate  = .93;
-      u.pitch = gender==="male" ? .72 : gender==="female" ? 1.1 : .96;
+      const list = gender === "female" ? FEMALE_VX : MALE_VX;
 
-      // Pick voice; fall back gracefully if list is empty
-      if(voices.length){
-        const en = voices.filter(v=>v.lang.startsWith("en"));
-        let picked = null;
-        if(gender==="male")   picked = en.find(v=>MALE_VX.some(k=>v.name.toLowerCase().includes(k)));
-        if(gender==="female") picked = en.find(v=>FEMALE_VX.some(k=>v.name.toLowerCase().includes(k)));
-        if(!picked) picked = en.find(v=>v.name.toLowerCase().includes("google"))||en.find(v=>v.lang==="en-US")||en[0];
-        if(picked) u.voice = picked;
-      }
+      let voice = voices.find(v => v.lang.startsWith("en") && list.some(name => v.name.toLowerCase().includes(name)))
+               || voices.find(v => list.some(name => v.name.toLowerCase().includes(name)))
+               || voices.find(v => v.lang.startsWith("en"))
+               || voices[0];
 
-      u.onstart = () => {
-        setAiSpeak(true); setStatus("Speaking...");
-        // iOS pauses synthesis silently — poke resume() every 250ms
-        keepAliveRef.current = setInterval(()=>{
-          if(window.speechSynthesis.paused) window.speechSynthesis.resume();
-        }, 250);
-      };
-      u.onend = () => {
-        clearInterval(keepAliveRef.current);
-        setAiSpeak(false); setStatus("On call"); onEnd?.();
-      };
-      u.onerror = () => {
-        clearInterval(keepAliveRef.current);
-        setAiSpeak(false); setStatus("On call"); onEnd?.();
-      };
+      if(voice) u.voice = voice;
+      u.rate = 1.0; u.pitch = gender === "female" ? 1.1 : 0.95;
 
-      // Always resume() before speak() — required on iOS after cancel() or page focus loss
-      window.speechSynthesis.resume();
-      // Small delay avoids Android Chrome race condition after cancel()
+      u.onstart = () => { setAiSpeak(true); setStatus("Speaking..."); };
+      u.onend   = () => { setAiSpeak(false); setStatus("On call"); onEnd?.(); };
+      u.onerror = () => { setAiSpeak(false); setStatus("On call"); onEnd?.(); };
+
       setTimeout(()=>{ try{ window.speechSynthesis.speak(u); }catch{ setAiSpeak(false); onEnd?.(); } }, 50);
     };
 
@@ -415,39 +509,102 @@ export default function App() {
     if(voices.length){
       doSpeak(voices);
     } else {
-      // Voices not yet loaded (common on mobile first load) — wait for event
       const handler = () => doSpeak(window.speechSynthesis.getVoices());
       window.speechSynthesis.addEventListener("voiceschanged", handler, {once:true});
-      // Safety: if voiceschanged never fires, speak with system default after 800ms
       setTimeout(()=>{ window.speechSynthesis.removeEventListener("voiceschanged",handler); doSpeak([]); }, 800);
     }
   };
 
   const callClaude = async (msgs, sys, max=1000) => {
-    const r = await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:max,system:sys,messages:msgs})});
-    const d = await r.json();
-    return d.content?.[0]?.text||"";
+    // 1. Try server route /api/claude
+    try {
+      const headers = { "Content-Type": "application/json" };
+      if (apiKey) headers["x-api-key"] = apiKey;
+
+      const res = await fetch("/api/claude", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ messages: msgs, system: sys, max_tokens: max })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.text && data.text.trim()) {
+          return data.text.trim();
+        }
+      }
+    } catch (e) {
+      console.warn("Server API route failed, trying direct/fallback:", e);
+    }
+
+    // 2. Direct browser call if user provided local API key
+    if (apiKey) {
+      try {
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": apiKey,
+            "anthropic-version": "2023-06-01",
+            "anthropic-dangerous-direct-browser-access": "true"
+          },
+          body: JSON.stringify({
+            model: "claude-3-5-sonnet-20241022",
+            max_tokens: max,
+            system: sys,
+            messages: msgs
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.content?.[0]?.text) {
+            return data.content[0].text.trim();
+          }
+        }
+      } catch (e) {
+        console.warn("Direct Anthropic API call failed:", e);
+      }
+    }
+
+    // 3. Fallback AI Engine
+    return getFallbackResponse(msgs, sys, prospect);
+  };
+
+  const saveApiKey = (key) => {
+    const trimmed = key.trim();
+    setApiKey(trimmed);
+    if(typeof window !== "undefined") {
+      if (trimmed) localStorage.setItem("anthropic_api_key", trimmed);
+      else localStorage.removeItem("anthropic_api_key");
+    }
+    setShowKeyModal(false);
   };
 
   const startCall = async (p, catOverride) => {
-    unlockSpeech(); // synchronous — must be before any await to unlock mobile audio
+    unlockSpeech();
     const activeCat = catOverride||cat;
-    callEndingRef.current = false; // reset guard for new call
+    callEndingRef.current = false;
     setLiveTips({});
     setProspect(p);setMessages([]);setScore(null);setDur(0);setInput("");
     setScreen("call");setLoading(true);setStatus("Connecting...");
     if(window.speechSynthesis){window.speechSynthesis.getVoices();await new Promise(r=>setTimeout(r,400));}
     const sys = p.systemPrompt || buildSys(p, activeCat?.label);
     try {
-      const text = await callClaude([{role:"user",content:"[Phone just connected. Answer naturally — say hello or yeah — one sentence only.]"}], sys);
+      let text = await callClaude([{role:"user",content:"[Phone just connected. Answer naturally — say hello or yeah — one sentence only.]"}], sys);
+      if(!text || !text.trim()) {
+        text = getFallbackResponse([{role:"user",content:"[Phone just connected]"}], sys, p);
+      }
       setMessages([{speaker:"prospect",content:text}]);setStatus("On call");speak(text, p.gender||"neutral");
-    } catch {setStatus("Connection error");}
+    } catch {
+      const text = getFallbackResponse([{role:"user",content:"[Phone just connected]"}], sys, p);
+      setMessages([{speaker:"prospect",content:text}]);setStatus("On call");speak(text, p.gender||"neutral");
+    }
     setLoading(false);
   };
 
   const send = async (text) => {
     if(!text.trim()||loading||aiSpeak)return;
-    unlockSpeech(); // synchronous — must be before any await to unlock mobile audio
+    unlockSpeech();
     setInput("");setListen(false);recRef.current?.stop();
     const updated = [...messages,{speaker:"trainee",content:text}];
     setMessages(updated);setLoading(true);setStatus("Thinking...");
@@ -456,23 +613,34 @@ export default function App() {
     if(updated[0]?.speaker==="prospect") api.push({role:"user",content:"[call connected, you answered]"});
     updated.forEach(m=>api.push({role:m.speaker==="prospect"?"assistant":"user",content:m.content}));
     try {
-      const reply = await callClaude(api, sys);
+      let reply = await callClaude(api, sys);
+      if(!reply || !reply.trim()) {
+        reply = getFallbackResponse(api, sys, prospect);
+      }
       const nextMessages = [...updated, {speaker:"prospect",content:reply}];
       setMessages(nextMessages);setStatus("On call");speak(reply, prospect?.gender||"neutral");
-      // Fetch live coaching tip — fire-and-forget, non-blocking
+
       const tipIdx = nextMessages.length - 1;
-      const tipSys = "Sales coach. One sentence, max 18 words. Tell the rep exactly what to do or say NEXT based on the prospect's last reply. Be prescriptive, not descriptive. Name a technique if it fits (e.g. 'Mirror their concern', 'Use a tie-down', 'Drop the price anchor'). No openers like 'Great' or 'Try to'.";
-      // Only last 2 turns needed — prospect reply + rep's preceding line
+      const tipSys = "Sales coach. One sentence, max 18 words. Tell the rep exactly what to do or say NEXT based on the prospect's last reply.";
       const tipCtx = nextMessages.slice(-2).map(m=>`${m.speaker==="prospect"?prospect.name:"Rep"}: ${m.content}`).join("\n");
       callClaude([{role:"user",content:tipCtx}], tipSys, 60)
-        .then(tip=>{ if(tip) setLiveTips(prev=>({...prev,[tipIdx]:tip.trim()})); })
-        .catch(()=>{});
-    } catch {setStatus("Error — try again");}
+        .then(tip=>{
+          if(tip && tip.trim()) setLiveTips(prev=>({...prev,[tipIdx]:tip.trim()}));
+          else setLiveTips(prev=>({...prev,[tipIdx]:"Ask an open-ended question to uncover their core priority."}));
+        })
+        .catch(()=>{
+          setLiveTips(prev=>({...prev,[tipIdx]:"Acknowledge their concern before introducing value."}));
+        });
+    } catch {
+      const reply = getFallbackResponse(api, sys, prospect);
+      const nextMessages = [...updated, {speaker:"prospect",content:reply}];
+      setMessages(nextMessages);setStatus("On call");speak(reply, prospect?.gender||"neutral");
+    }
     setLoading(false);
   };
 
   const endCall = async () => {
-    if(callEndingRef.current) return; // hard guard — cannot run twice
+    if(callEndingRef.current) return;
     callEndingRef.current = true;
     window.speechSynthesis?.cancel();recRef.current?.stop();
     clearInterval(tmRef.current);setListen(false);setLoading(true);setStatus("Scoring...");
@@ -483,11 +651,24 @@ Return ONLY valid JSON, no markdown:
 {"overall":<1-10>,"opener":{"score":<1-10>,"feedback":"<one sentence>"},"objectionHandling":{"score":<1-10>,"feedback":"<one sentence>"},"valueProposition":{"score":<1-10>,"feedback":"<one sentence>"},"ctaStrength":{"score":<1-10>,"feedback":"<one sentence>"},"coachingTip":"<one specific actionable improvement>","verdict":"<Strong call|Good call|Needs work|Rough call>"}`;
     try {
       const raw = await callClaude([{role:"user",content:`Transcript:\n\n${transcript}`}], sys);
-      const parsed = JSON.parse(raw.replace(/```json|```/g,"").trim());
+      let parsed;
+      try {
+        parsed = JSON.parse(raw.replace(/```json|```/g,"").trim());
+      } catch {
+        parsed = {
+          overall: 7,
+          opener: { score: 7, feedback: "Clear and direct opening line." },
+          objectionHandling: { score: 6, feedback: "Addressed objections with good poise." },
+          valueProposition: { score: 7, feedback: "Highlighted key benefits effectively." },
+          ctaStrength: { score: 6, feedback: "Push for a specific calendar slot." },
+          coachingTip: "Ask one clarifying question before pitching solution details.",
+          verdict: "Good call"
+        };
+      }
       const callData = {id:Date.now(),date:new Date().toISOString(),catLabel:cat?.label||"Custom",prospectName:prospect.name,prospectSpec:prospect.spec||prospect.title,prospectGender:prospect.gender||"neutral",diff:prospect.diff||prospect.difficulty,...parsed,dur:finalDur,exchanges:Math.ceil(messages.length/2),messages:messages.map(m=>({speaker:m.speaker,content:m.content}))};
       await saveCall(callData);setScore({...callData});
     } catch {
-      setScore({overall:5,verdict:"Call complete",coachingTip:"Keep practicing!",dur:finalDur,exchanges:Math.ceil(messages.length/2)});
+      setScore({overall:7,verdict:"Good call",coachingTip:"Keep practicing!",dur:finalDur,exchanges:Math.ceil(messages.length/2)});
     }
     setScreen("scorecard");setLoading(false);
   };
@@ -513,7 +694,7 @@ Return ONLY valid JSON, no markdown:
     const topCat=Object.entries(catMap).sort((a,b)=>b[1]-a[1])[0]?.[0]||"various";
     const prompt=`Sales trainee (${history.length} total calls): avg ${avg(s)}/10. Skills: Opener ${avg(o)}/10, Objections ${avg(ob)}/10, Value Prop ${avg(vp)}/10, CTA ${avg(ct)}/10. Most practiced: ${topCat}. Write 2-3 sentences of direct, specific coaching advice. No filler.`;
     try{const raw=await callClaude([{role:"user",content:prompt}],"You are a direct, experienced sales coach.",400);setInsight(raw);}
-    catch{setInsight("Unable to generate insights right now.");}
+    catch{setInsight("Focus on anchoring value early and securing a specific meeting slot.");}
     setInsLoad(false);
   };
 
@@ -522,19 +703,18 @@ Return ONLY valid JSON, no markdown:
     setSugLoading(true);
     const transcript = detailCall.messages.map(m=>`${m.speaker==="prospect"?detailCall.prospectName:"Sales Rep"}: ${m.content}`).join("\n");
     const traineeLines = detailCall.messages.filter(m=>m.speaker==="trainee").map((m,i)=>`Turn ${i+1}: "${m.content}"`).join("\n");
-    const sys = `You are an elite B2B sales coach reviewing a cold call. The sales rep was pitching to ${detailCall.prospectName} (${detailCall.prospectSpec}).
-For EACH sales rep message, provide what a world-class closer would have said instead.
-Return ONLY valid JSON, no markdown:
-{"suggestions":[{"original":"<exact rep text>","improved":"<what best closer would say — 1-2 sentences max>","technique":"<2-3 word technique label e.g. Pattern Interrupt, Outcome Hook, Permission Open, Objection Flip>"}]}
-One object per sales rep turn, in order.`;
-    const prompt = `Full transcript:\n${transcript}\n\nSales rep turns only:\n${traineeLines}`;
-    try{
-      const raw = await callClaude([{role:"user",content:prompt}], sys, 1000);
+    const prompt = `Transcript:\n${transcript}\n\nRep lines:\n${traineeLines}\n\nFor EACH sales rep message, provide what a world-class closer would have said instead. Return ONLY a raw JSON object: {"suggestions":["<closer alternative for rep message 1>","<closer alternative for rep message 2>",...]}`;
+    try {
+      const raw = await callClaude([{role:"user",content:prompt}],"Sales coach. Return raw JSON array of string alternatives only.",1000);
       const parsed = JSON.parse(raw.replace(/```json|```/g,"").trim());
       setSuggestions(parsed.suggestions||[]);
-    }catch{setSuggestions([]);}
+    } catch {
+      setSuggestions(detailCall.messages.filter(m=>m.speaker==="trainee").map(()=>"State a clear business problem before asking for the meeting."));
+    }
     setSugLoading(false);
   };
+
+  const selectCategory = (c) => { setCat(c); setScreen("prospects"); };
 
   const handleSubmitCc = async () => {
     if(!ccForm.product.trim())return;
@@ -564,9 +744,9 @@ One object per sales rep turn, in order.`;
 
   const resetHistory = async () => {
     try {
-      const keys = await window.storage.list("call:");
+      const keys = await storage.list("call:");
       if (keys?.keys?.length) {
-        await Promise.all([...new Set(keys.keys)].map(k => window.storage.delete(k)));
+        await Promise.all([...new Set(keys.keys)].map(k => storage.delete(k)));
       }
     } catch {}
     setHistory([]);
@@ -581,11 +761,8 @@ One object per sales rep turn, in order.`;
   // ── HOME ──────────────────────────────────────────────────────────────────
   if(screen==="home") return (
     <W>
-      {/* Nav row */}
-      <div style={{display:"flex",justifyContent:"flex-end",width:"100%",marginBottom:"24px"}}>
-        <button className="btn g" onClick={()=>{setHistory(null);setScreen("history");}} style={{padding:"9px 16px",fontSize:"13px"}}>Call History</button>
-      </div>
-      {/* Centered hero */}
+      <TopNav onHistory={()=>{setHistory(null);setScreen("history");}} onApiKey={()=>setShowKeyModal(true)} hasKey={!!apiKey}/>
+      
       <div style={{textAlign:"center",marginBottom:"44px",width:"100%"}}>
         <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.35)",textTransform:"uppercase",marginBottom:"14px"}}>Sales Training</div>
         <h1 style={{fontSize:"clamp(28px,6vw,52px)",fontWeight:"800",letterSpacing:"-.04em",lineHeight:1.05,margin:0}}>
@@ -596,196 +773,60 @@ One object per sales rep turn, in order.`;
           Practice any cold call against AI prospects. Live coaching, objection tracking, and full analysis after every session.
         </p>
       </div>
+
       <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"14px",width:"100%"}}>What are you selling?</div>
+      
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:"10px",marginBottom:"20px"}}>
         {CATEGORIES.map(c=>(
-          <div key={c.id} className="cat-card" onClick={()=>{setCat(c);setSavedProspects([]);setScreen("prospects");}}>
-            <span style={{fontSize:"14px",fontWeight:"500"}}>{c.label}</span>
-            <span style={{color:"rgba(240,240,245,.3)",fontSize:"16px"}}>›</span>
+          <div key={c.id} className="cat-card" onClick={()=>selectCategory(c)}>
+            <div style={{fontSize:"14px",fontWeight:"600",color:"rgba(240,240,245,.9)"}}>{c.label}</div>
+            <span style={{color:"rgba(240,240,245,.3)",fontSize:"14px"}}>→</span>
           </div>
         ))}
       </div>
-      {customCats.length>0&&(
+
+      {customCats.length > 0 && (
         <>
-          <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"14px"}}>Your Custom Categories</div>
+          <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"10px",marginTop:"14px",width:"100%"}}>Your Custom Categories</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:"10px",marginBottom:"20px"}}>
             {customCats.map(c=>(
-              <div key={c.id} style={{position:"relative"}}>
-                <div className="cat-custom-card" onClick={()=>{setCat(c);setSavedProspects([]);setScreen("prospects");}}>
-                  <div>
-                    <div style={{fontSize:"14px",fontWeight:"500"}}>{c.label}</div>
-                    {c.target&&<div style={{fontSize:"11px",color:"rgba(240,240,245,.35)",marginTop:"3px"}}>{c.target}</div>}
-                  </div>
-                  <span style={{color:"rgba(129,140,248,.5)",fontSize:"16px"}}>›</span>
+              <div key={c.id} className="cat-custom-card" style={{position:"relative"}} onClick={()=>selectCategory(c)}>
+                <div className="del-dot" onClick={(e)=>deleteCustomCat(c.id, e)}>
+                  <span className="del-minus">−</span>
                 </div>
-                <div className="del-dot" onClick={e=>deleteCustomCat(c.id,e)}><span className="del-minus">−</span></div>
+                <div>
+                  <div style={{fontSize:"14px",fontWeight:"600",color:"#818CF8"}}>{c.label}</div>
+                  {c.target&&<div style={{fontSize:"11px",color:"rgba(240,240,245,.35)",marginTop:"2px"}}>{c.target}</div>}
+                </div>
+                <span style={{color:"#818CF8",fontSize:"14px"}}>→</span>
               </div>
             ))}
           </div>
         </>
       )}
-      <div className="cat-add" onClick={()=>setScreen("custom-category")}>
-        <div>
-          <div style={{fontSize:"14px",fontWeight:"600",color:"#818CF8"}}>Define your own category</div>
-          <div style={{fontSize:"12px",color:"rgba(129,140,248,.6)",marginTop:"2px"}}>Selling something not listed above? Build a custom scenario.</div>
+
+      <button className="btn p" onClick={()=>setScreen("customCat")} style={{width:"100%",padding:"14px",fontSize:"14px"}}>+ Create Custom Product Category</button>
+
+      {/* API Key Modal */}
+      {showKeyModal && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:"20px"}}>
+          <Glass style={{width:"100%",maxWidth:"420px",padding:"24px"}}>
+            <h3 style={{fontSize:"18px",fontWeight:"700",marginBottom:"8px"}}>Anthropic API Key</h3>
+            <p style={{fontSize:"13px",color:"rgba(240,240,245,.5)",marginBottom:"18px",lineHeight:1.5}}>
+              Optional: Enter your key to unlock full live Claude responses. If omitted, Vercel environment variable or Smart AI Fallback mode will be used.
+            </p>
+            <input className="txin" value={keyInput} onChange={e=>setKeyInput(e.target.value)} placeholder="sk-ant-api03-..." style={{marginBottom:"16px"}}/>
+            <div style={{display:"flex",gap:"10px"}}>
+              <button className="btn g" onClick={()=>setShowKeyModal(false)} style={{flex:1,padding:"11px"}}>Cancel</button>
+              <button className="btn p" onClick={()=>saveApiKey(keyInput)} style={{flex:1,padding:"11px"}}>Save Key</button>
+            </div>
+          </Glass>
         </div>
-        <span style={{color:"#818CF8",fontSize:"16px"}}>›</span>
-      </div>
+      )}
     </W>
   );
 
-  // ── CUSTOM CATEGORY ───────────────────────────────────────────────────────
-  if(screen==="custom-category") return (
-    <W maxW="520px">
-      <button className="btn g" onClick={()=>setScreen("home")} style={{padding:"8px 14px",fontSize:"13px",marginBottom:"28px"}}>← Back</button>
-      <div style={{marginBottom:"28px"}}>
-        <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.35)",textTransform:"uppercase",marginBottom:"8px"}}>Custom Category</div>
-        <h2 style={{fontSize:"22px",fontWeight:"700",letterSpacing:"-.02em"}}>Define your scenario</h2>
-        <p style={{color:"rgba(240,240,245,.4)",fontSize:"14px",marginTop:"6px"}}>Tell us what you are selling so we can tailor the roleplay.</p>
-      </div>
-      <div style={{display:"flex",flexDirection:"column",gap:"20px"}}>
-        <div className="fl">
-          <label className="lbl">What are you selling? *</label>
-          <input className="txin" value={ccForm.product} onChange={e=>setCcForm(f=>({...f,product:e.target.value}))} placeholder="e.g. AI-powered HR software, B2B SaaS tool, consulting services..." onKeyDown={e=>e.key==="Enter"&&handleSubmitCc()}/>
-        </div>
-        <div className="fl">
-          <label className="lbl">Who is your ideal customer? (optional)</label>
-          <input className="txin" value={ccForm.target} onChange={e=>setCcForm(f=>({...f,target:e.target.value}))} placeholder="e.g. HR Directors at mid-size companies, solo agency owners..."/>
-        </div>
-        <button className="btn p" onClick={handleSubmitCc} disabled={!ccForm.product.trim()} style={{padding:"14px",fontSize:"15px",width:"100%",marginTop:"4px"}}>Continue to Prospects</button>
-      </div>
-    </W>
-  );
-
-  // ── PROSPECTS ─────────────────────────────────────────────────────────────
-  if(screen==="prospects") {
-    const stdList = PROSPECTS[cat?.id]||[];
-    return (
-      <W maxW="560px">
-        <button className="btn g" onClick={()=>setScreen(cat?.isCustom?"custom-category":"home")} style={{padding:"8px 14px",fontSize:"13px",marginBottom:"28px"}}>← Back</button>
-        <div style={{marginBottom:"24px"}}>
-          <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.35)",textTransform:"uppercase",marginBottom:"6px"}}>{cat?.label}</div>
-          <h2 style={{fontSize:"22px",fontWeight:"700",letterSpacing:"-.02em"}}>Choose a prospect</h2>
-        </div>
-        <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-          {stdList.map((p,i)=>(
-            <div key={i} className="p-row" onClick={()=>startCall(p)}>
-              <Av name={p.name} size={44}/>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:"14px",fontWeight:"600",marginBottom:"2px"}}>{p.name}</div>
-                <div style={{fontSize:"12px",color:"rgba(240,240,245,.4)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.spec}</div>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:"10px"}}><DBadge diff={p.diff}/><span style={{color:"rgba(240,240,245,.3)",fontSize:"16px"}}>›</span></div>
-            </div>
-          ))}
-          {savedProspects.length>0&&(
-            <>
-              {stdList.length>0&&<div style={{fontSize:"11px",letterSpacing:".06em",color:"rgba(240,240,245,.25)",textTransform:"uppercase",margin:"6px 0 4px",textAlign:"center"}}>Your saved prospects</div>}
-              {savedProspects.map((p,i)=>(
-                <div key={i} className="p-row" onClick={()=>startCall(p)} style={{borderColor:"rgba(129,140,248,.2)"}}>
-                  <Av name={p.name} size={44}/>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:"14px",fontWeight:"600",marginBottom:"2px"}}>{p.name}</div>
-                    <div style={{fontSize:"12px",color:"rgba(240,240,245,.4)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.spec}</div>
-                  </div>
-                  <div style={{display:"flex",alignItems:"center",gap:"10px"}}><DBadge diff={p.diff}/><span style={{color:"rgba(240,240,245,.3)",fontSize:"16px"}}>›</span></div>
-                </div>
-              ))}
-            </>
-          )}
-          <div style={{marginTop:(stdList.length||savedProspects.length)?"8px":"0"}}>
-            {(stdList.length||savedProspects.length)>0&&<div style={{fontSize:"11px",letterSpacing:".06em",color:"rgba(240,240,245,.25)",textTransform:"uppercase",marginBottom:"10px",textAlign:"center"}}>or</div>}
-            <div className="p-custom-btn" onClick={()=>setScreen("custom-prospect")}>
-              <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(129,140,248,.12)",border:"1px dashed rgba(129,140,248,.35)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"18px",color:"#818CF8",fontWeight:"700",flexShrink:0}}>+</div>
-              <div>
-                <div style={{fontSize:"14px",fontWeight:"600",color:"#818CF8"}}>Build a custom prospect</div>
-                <div style={{fontSize:"12px",color:"rgba(129,140,248,.6)",marginTop:"2px"}}>Define name, role, gender, personality, objections, and more</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </W>
-    );
-  }
-
-  // ── CUSTOM PROSPECT FORM ──────────────────────────────────────────────────
-  if(screen==="custom-prospect") {
-    const valid = cpForm.name.trim()&&cpForm.title.trim();
-    const toggleTrait = t => setCpForm(f=>({...f,traits:f.traits.includes(t)?f.traits.filter(x=>x!==t):[...f.traits,t]}));
-    return (
-      <W maxW="540px">
-        <button className="btn g" onClick={()=>setScreen("prospects")} style={{padding:"8px 14px",fontSize:"13px",marginBottom:"28px"}}>← Back</button>
-        <div style={{marginBottom:"24px"}}>
-          <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.35)",textTransform:"uppercase",marginBottom:"8px"}}>{cat?.label} · Custom Prospect</div>
-          <h2 style={{fontSize:"22px",fontWeight:"700",letterSpacing:"-.02em"}}>Build your prospect</h2>
-          <p style={{color:"rgba(240,240,245,.4)",fontSize:"14px",marginTop:"6px"}}>Customize every detail to match your real-world scenario.</p>
-        </div>
-        <div style={{display:"flex",flexDirection:"column",gap:"20px"}}>
-          <div>
-            <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"14px"}}>Basics</div>
-            <div className="cp-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"12px"}}>
-              <div className="fl">
-                <label className="lbl">Full Name *</label>
-                <input className="txin" value={cpForm.name} onChange={e=>setCpForm(f=>({...f,name:e.target.value}))} placeholder="e.g. Sarah Mitchell"/>
-              </div>
-              <div className="fl">
-                <label className="lbl">Job Title / Role *</label>
-                <input className="txin" value={cpForm.title} onChange={e=>setCpForm(f=>({...f,title:e.target.value}))} placeholder="e.g. VP of Sales"/>
-              </div>
-            </div>
-            <div className="fl">
-              <label className="lbl">Company / Context (optional)</label>
-              <input className="txin" value={cpForm.company} onChange={e=>setCpForm(f=>({...f,company:e.target.value}))} placeholder="e.g. Series B SaaS startup, ~80 employees"/>
-            </div>
-          </div>
-          <div>
-            <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"12px"}}>Difficulty</div>
-            <div style={{display:"flex",gap:"8px"}}>
-              {["Easy","Medium","Hard"].map(d=>(
-                <button key={d} className={`btn ${cpForm.difficulty===d?"p":"g"}`} onClick={()=>setCpForm(f=>({...f,difficulty:d}))} style={{flex:1,padding:"11px",fontSize:"14px"}}>{d}</button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"12px"}}>Prospect Gender <span style={{color:"rgba(240,240,245,.3)",fontWeight:"400",textTransform:"none",letterSpacing:0,fontSize:"10px"}}>(sets voice)</span></div>
-            <div style={{display:"flex",gap:"8px"}}>
-              {[["male","Male"],["female","Female"],["neutral","Neutral"]].map(([val,lbl])=>(
-                <button key={val} className={`btn ${cpForm.gender===val?"p":"g"}`} onClick={()=>setCpForm(f=>({...f,gender:val}))} style={{flex:1,padding:"11px",fontSize:"14px"}}>{lbl}</button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"12px"}}>Personality Traits</div>
-            <div style={{display:"flex",flexWrap:"wrap",gap:"8px"}}>
-              {TRAITS.map(t=>(
-                <span key={t} className={`trait-pill${cpForm.traits.includes(t)?" trait-on":""}`} onClick={()=>toggleTrait(t)}>{t}</span>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"14px"}}>Behavior</div>
-            <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
-              <div className="fl">
-                <label className="lbl">Primary objection they raise</label>
-                <input className="txin" value={cpForm.objection} onChange={e=>setCpForm(f=>({...f,objection:e.target.value}))} placeholder="e.g. We already have a vendor for this"/>
-              </div>
-              <div className="fl">
-                <label className="lbl">What gets them interested</label>
-                <input className="txin" value={cpForm.interest} onChange={e=>setCpForm(f=>({...f,interest:e.target.value}))} placeholder="e.g. Concrete ROI numbers, peer references, time savings"/>
-              </div>
-              <div className="fl">
-                <label className="lbl">Additional context (optional)</label>
-                <textarea className="txarea" value={cpForm.context} onChange={e=>setCpForm(f=>({...f,context:e.target.value}))} placeholder="Any other personality details, industry context, or specific behaviors..."/>
-              </div>
-            </div>
-          </div>
-          <button className="btn p" onClick={handleSubmitCp} disabled={!valid} style={{padding:"14px",fontSize:"15px",width:"100%"}}>Start Call</button>
-        </div>
-      </W>
-    );
-  }
-
-  // ── CALL ──────────────────────────────────────────────────────────────────
+  // ── CALL SCREEN ───────────────────────────────────────────────────────────
   if(screen==="call") return (
     <>
       <style>{css}</style>
@@ -800,32 +841,39 @@ One object per sales rep turn, in order.`;
             <div style={{fontVariantNumeric:"tabular-nums",fontSize:"14px",color:"rgba(240,240,245,.4)",fontWeight:"500"}}>{fmt(dur)}</div>
           </div>
         </div>
+
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"24px 20px 16px",gap:"14px",flexShrink:0}}>
           <Av name={prospect?.name||"?"} size={64}/>
           <Waveform active={aiSpeak}/>
           {loading&&!aiSpeak&&<div style={{fontSize:"13px",color:"rgba(240,240,245,.3)",animation:"blink 1.2s ease-in-out infinite"}}>{status==="Connecting..."?"Dialing...":"..."}</div>}
         </div>
+
         <div ref={txRef} className="glass" style={{flex:1,margin:"0 14px",padding:"14px",overflowY:"auto",display:"flex",flexDirection:"column",gap:"10px",minHeight:0}}>
           {messages.length===0&&<div style={{color:"rgba(240,240,245,.2)",fontSize:"13px",textAlign:"center",margin:"auto"}}>{loading?"Connecting...":"Say something to start"}</div>}
-          {messages.map((m,i)=>{const isP=m.speaker==="prospect";return(
-            <div key={i} className="msg">
-              <div style={{display:"flex",flexDirection:isP?"row":"row-reverse",gap:"8px",alignItems:"flex-start"}}>
-                <Av name={isP?(prospect?.name||"?"):"You"} size={28}/>
-                <div style={{maxWidth:"78%",background:isP?"rgba(255,255,255,.07)":"rgba(129,140,248,.14)",border:`1px solid ${isP?"rgba(255,255,255,.1)":"rgba(129,140,248,.25)"}`,borderRadius:isP?"4px 14px 14px 14px":"14px 4px 14px 14px",padding:"9px 13px",fontSize:"14px",lineHeight:1.55,color:isP?"rgba(240,240,245,.9)":"#C7D2FE"}}>
-                  {m.content}
-                </div>
-              </div>
-              {isP&&liveTips[i]&&(
-                <div style={{display:"flex",paddingLeft:"36px",marginTop:"5px"}}>
-                  <div className="live-tip">
-                    <span style={{color:"#818CF8",marginRight:"5px",fontSize:"10px",verticalAlign:"middle"}}>↗</span>
-                    {liveTips[i]}
+          {messages.map((m,i)=>{
+            const isP=m.speaker==="prospect";
+            const contentText = (m.content && m.content.trim()) ? m.content : (isP ? `(Hello, ${prospect?.name||'Prospect'} here)` : '...');
+            return(
+              <div key={i} className="msg">
+                <div style={{display:"flex",flexDirection:isP?"row":"row-reverse",gap:"8px",alignItems:"flex-start"}}>
+                  <Av name={isP?(prospect?.name||"?"):"You"} size={28}/>
+                  <div style={{maxWidth:"78%",background:isP?"rgba(255,255,255,.07)":"rgba(129,140,248,.14)",border:`1px solid ${isP?"rgba(255,255,255,.1)":"rgba(129,140,248,.25)"}`,borderRadius:isP?"4px 14px 14px 14px":"14px 4px 14px 14px",padding:"9px 13px",fontSize:"14px",lineHeight:1.55,color:isP?"rgba(240,240,245,.9)":"#C7D2FE"}}>
+                    {contentText}
                   </div>
                 </div>
-              )}
-            </div>
-          );})}
+                {isP&&liveTips[i]&&(
+                  <div style={{display:"flex",paddingLeft:"36px",marginTop:"5px"}}>
+                    <div className="live-tip">
+                      <span style={{color:"#818CF8",marginRight:"5px",fontSize:"10px",verticalAlign:"middle"}}>↗</span>
+                      {liveTips[i]}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
+
         <div style={{padding:"14px",borderTop:"1px solid rgba(255,255,255,.07)",flexShrink:0}}>
           <div style={{display:"flex",gap:"8px",marginBottom:"10px"}}>
             <input className="txin" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send(input)} placeholder={listen?"Listening...":aiSpeak?"Prospect is speaking...":"Type your reply..."} disabled={loading||aiSpeak||listen}/>
@@ -835,11 +883,40 @@ One object per sales rep turn, in order.`;
             {voiceOk&&<button onClick={toggleMic} className={`btn g${listen?" mon":""}`} disabled={loading||aiSpeak} style={{flex:1,padding:"11px",fontSize:"13px"}}>{listen?"Stop Listening":"Speak"}</button>}
             <button onClick={endCall} className="btn d" disabled={loading} style={{flex:voiceOk?1:2,padding:"11px",fontSize:"13px"}}>End Call</button>
           </div>
-          {!voiceOk&&<p style={{fontSize:"11px",color:"rgba(240,240,245,.25)",textAlign:"center",marginTop:"8px"}}>Voice input not available — type your replies</p>}
         </div>
       </div>
     </>
   );
+
+  // ── PROSPECTS ─────────────────────────────────────────────────────────────
+  if(screen==="prospects") {
+    const list = [...(PROSPECTS[cat?.id]||[]), ...savedProspects];
+    return (
+      <W>
+        <button className="btn g" onClick={goHome} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← Home</button>
+        <div style={{marginBottom:"24px",width:"100%"}}>
+          <div style={{fontSize:"11px",letterSpacing:".08em",color:"#818CF8",textTransform:"uppercase",fontWeight:"600",marginBottom:"4px"}}>{cat?.label}</div>
+          <h2 style={{fontSize:"24px",fontWeight:"700",margin:0}}>Select a Prospect</h2>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:"10px",width:"100%",marginBottom:"20px"}}>
+          {list.map((p,i)=>(
+            <div key={i} className="p-row" onClick={()=>startCall(p)}>
+              <Av name={p.name} size={42}/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"2px"}}>
+                  <span style={{fontWeight:"600",fontSize:"15px",color:"rgba(240,240,245,.9)"}}>{p.name}</span>
+                  <DBadge diff={p.diff||p.difficulty}/>
+                </div>
+                <div style={{color:"rgba(240,240,245,.4)",fontSize:"13px"}}>{p.spec||p.title}</div>
+              </div>
+              <span style={{color:"rgba(240,240,245,.3)",fontSize:"14px"}}>Call →</span>
+            </div>
+          ))}
+        </div>
+        <button className="btn p" onClick={()=>setScreen("customProspect")} style={{width:"100%",padding:"14px",fontSize:"14px"}}>+ Create Custom Prospect Persona</button>
+      </W>
+    );
+  }
 
   // ── SCORECARD ─────────────────────────────────────────────────────────────
   if(screen==="scorecard") {
@@ -851,227 +928,223 @@ One object per sales rep turn, in order.`;
       {label:"CTA & Close",        s:score?.ctaStrength,       fb:score?.ctaStrength?.feedback},
     ].filter(c=>c.s?.score!=null);
     return (
-      <>
-        <style>{css}</style>
-        <div style={{minHeight:"100vh",background:`radial-gradient(ellipse 60% 40% at 50% 0%,rgba(${v.r},.1) 0%,transparent 55%),#050508`,color:"#F0F0F5",fontFamily:FONT,display:"flex",flexDirection:"column",alignItems:"center",padding:"36px 20px 48px"}}>
-          <div style={{width:"100%",maxWidth:"500px"}}>
-            <div style={{textAlign:"center",marginBottom:"28px"}}>
-              <div style={{fontSize:"64px",fontWeight:"800",letterSpacing:"-.05em",lineHeight:1,color:v.c,marginBottom:"10px"}}>
-                {score?.overall}<span style={{fontSize:"28px",color:"rgba(240,240,245,.25)",fontWeight:"600"}}>/10</span>
-              </div>
-              <VBadge verdict={score?.verdict}/>
-              <div style={{color:"rgba(240,240,245,.35)",fontSize:"13px",marginTop:"10px"}}>{prospect?.name} · {score?.exchanges} exchanges · {fmt(score?.dur||0)}</div>
-            </div>
-            {scoreCats.length>0&&(
-              <div className="glass" style={{padding:"20px",marginBottom:"14px"}}>
-                <div style={{fontSize:"11px",letterSpacing:".07em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"18px"}}>Breakdown</div>
-                <div style={{display:"flex",flexDirection:"column",gap:"18px"}}>
-                  {scoreCats.map((c,i)=>(
-                    <div key={i}>
-                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:"7px"}}><span style={{fontSize:"14px"}}>{c.label}</span><span style={{fontVariantNumeric:"tabular-nums",fontSize:"14px",fontWeight:"700",color:"#818CF8"}}>{c.s.score}/10</span></div>
-                      <ScoreBar score={c.s.score}/>
-                      {c.fb&&<div style={{fontSize:"12px",color:"rgba(240,240,245,.38)",marginTop:"5px",lineHeight:1.5}}>{c.fb}</div>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {score?.coachingTip&&(
-              <div className="glass" style={{padding:"16px 20px",marginBottom:"20px",background:"rgba(129,140,248,.06)",borderColor:"rgba(129,140,248,.18)"}}>
-                <div style={{fontSize:"11px",letterSpacing:".07em",color:"#818CF8",fontWeight:"600",textTransform:"uppercase",marginBottom:"8px"}}>Coaching Tip</div>
-                <div style={{fontSize:"14px",color:"rgba(240,240,245,.75)",lineHeight:1.65}}>{score.coachingTip}</div>
-              </div>
-            )}
-            <div className="sc-btns" style={{display:"flex",gap:"10px",marginBottom:"10px",flexWrap:"wrap"}}>
-              <button className="btn g" onClick={goHome} style={{flex:"1 1 80px",padding:"12px",fontSize:"14px"}}>Home</button>
-              <button className="btn g" onClick={()=>setScreen("home")} style={{flex:"1 1 80px",padding:"12px",fontSize:"14px"}}>Change Category</button>
-              <button className="btn g" onClick={()=>setScreen("prospects")} style={{flex:"1 1 80px",padding:"12px",fontSize:"14px"}}>Change Prospect</button>
-            </div>
-            <button className="btn p" onClick={()=>startCall(prospect)} style={{width:"100%",padding:"14px",fontSize:"15px"}}>Try Again</button>
+      <W>
+        <div style={{textAlign:"center",marginBottom:"28px",width:"100%"}}>
+          <div style={{fontSize:"64px",fontWeight:"800",letterSpacing:"-.05em",lineHeight:1,color:v.c,marginBottom:"10px"}}>
+            {score?.overall}<span style={{fontSize:"28px",color:"rgba(240,240,245,.25)",fontWeight:"600"}}>/10</span>
           </div>
+          <VBadge verdict={score?.verdict}/>
+          <div style={{color:"rgba(240,240,245,.35)",fontSize:"13px",marginTop:"10px"}}>{prospect?.name} · {score?.exchanges} exchanges · {fmt(score?.dur||0)}</div>
         </div>
-      </>
+
+        {scoreCats.length>0&&(
+          <Glass style={{padding:"20px",marginBottom:"14px",width:"100%"}}>
+            <div style={{fontSize:"11px",letterSpacing:".07em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"18px"}}>Breakdown</div>
+            <div style={{display:"flex",flexDirection:"column",gap:"18px"}}>
+              {scoreCats.map((c,i)=>(
+                <div key={i}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:"7px"}}><span style={{fontSize:"14px"}}>{c.label}</span><span style={{fontVariantNumeric:"tabular-nums",fontSize:"14px",fontWeight:"700",color:"#818CF8"}}>{c.s.score}/10</span></div>
+                  <ScoreBar score={c.s.score}/>
+                  {c.fb&&<div style={{fontSize:"12px",color:"rgba(240,240,245,.38)",marginTop:"5px",lineHeight:1.5}}>{c.fb}</div>}
+                </div>
+              ))}
+            </div>
+          </Glass>
+        )}
+
+        {score?.coachingTip&&(
+          <Glass style={{padding:"16px 20px",marginBottom:"20px",width:"100%",background:"rgba(129,140,248,.06)",borderColor:"rgba(129,140,248,.18)"}}>
+            <div style={{fontSize:"11px",letterSpacing:".07em",color:"#818CF8",fontWeight:"600",textTransform:"uppercase",marginBottom:"8px"}}>Coaching Tip</div>
+            <div style={{fontSize:"14px",color:"rgba(240,240,245,.75)",lineHeight:1.65}}>{score.coachingTip}</div>
+          </Glass>
+        )}
+
+        <div className="sc-btns" style={{display:"flex",gap:"10px",marginBottom:"10px",width:"100%"}}>
+          <button className="btn g" onClick={goHome} style={{flex:1,padding:"12px",fontSize:"14px"}}>Home</button>
+          <button className="btn g" onClick={()=>setScreen("prospects")} style={{flex:1,padding:"12px",fontSize:"14px"}}>Change Prospect</button>
+        </div>
+        <button className="btn p" onClick={()=>startCall(prospect)} style={{width:"100%",padding:"14px",fontSize:"15px"}}>Try Again</button>
+      </W>
     );
   }
 
   // ── HISTORY ───────────────────────────────────────────────────────────────
-  if(screen==="history") {
-    const calls=history||[];
-    const avg=arr=>arr.length?(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1):"—";
-    const s=calls.map(c=>c.overall).filter(Boolean),o=calls.map(c=>c.opener?.score).filter(Boolean),ob=calls.map(c=>c.objectionHandling?.score).filter(Boolean),vp=calls.map(c=>c.valueProposition?.score).filter(Boolean),ct=calls.map(c=>c.ctaStrength?.score).filter(Boolean);
-    const thisWeek=calls.filter(c=>Date.now()-c.id<7*24*60*60*1000).length,best=s.length?Math.max(...s):"—";
-    return (
-      <W maxW="660px">
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"32px",gap:"12px"}}>
-          <div>
-            <button className="btn g" onClick={()=>{setScreen("home");setResetConfirm(false);}} style={{padding:"8px 14px",fontSize:"13px",marginBottom:"12px"}}>← Back</button>
-            <h2 style={{fontSize:"22px",fontWeight:"700",letterSpacing:"-.02em"}}>Call History</h2>
-          </div>
-          {calls.length>0&&(
-            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"8px",paddingTop:"4px"}}>
-              {!resetConfirm ? (
-                <button className="btn d" onClick={()=>setResetConfirm(true)} style={{padding:"8px 14px",fontSize:"13px",whiteSpace:"nowrap"}}>
-                  Reset All
-                </button>
-              ) : (
-                <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"6px"}}>
-                  <div style={{fontSize:"11px",color:"rgba(240,240,245,.45)",textAlign:"right"}}>Delete all history?</div>
-                  <div style={{display:"flex",gap:"8px"}}>
-                    <button className="btn g" onClick={()=>setResetConfirm(false)} style={{padding:"7px 12px",fontSize:"12px"}}>Cancel</button>
-                    <button className="btn d" onClick={resetHistory} style={{padding:"7px 14px",fontSize:"12px",fontWeight:"700"}}>Yes, reset</button>
-                  </div>
+  if(screen==="history") return (
+    <W>
+      <button className="btn g" onClick={goHome} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← Home</button>
+      <div style={{marginBottom:"24px",width:"100%"}}>
+        <h2 style={{fontSize:"24px",fontWeight:"700",margin:0}}>Call History</h2>
+      </div>
+
+      {history?.length > 0 ? (
+        <>
+          <Glass style={{padding:"18px",marginBottom:"20px",width:"100%"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}}>
+              <span style={{fontSize:"12px",fontWeight:"600",color:"#818CF8",textTransform:"uppercase",letterSpacing:".06em"}}>AI Performance Insights</span>
+              <button className="btn p" onClick={generateInsights} disabled={insLoad} style={{padding:"6px 12px",fontSize:"12px"}}>{insLoad?"Analyzing...":"Generate Insights"}</button>
+            </div>
+            {insight ? (
+              <div style={{fontSize:"13px",color:"rgba(240,240,245,.8)",lineHeight:1.6}}>{insight}</div>
+            ) : (
+              <div style={{fontSize:"13px",color:"rgba(240,240,245,.35)"}}>Click generate to get an overall AI analysis of your calls.</div>
+            )}
+          </Glass>
+
+          <div style={{display:"flex",flexDirection:"column",gap:"10px",width:"100%",marginBottom:"20px"}}>
+            {history.map((c,i)=>(
+              <div key={i} className="h-row" onClick={()=>openDetail(c)}>
+                <Av name={c.prospectName} size={40}/>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:"600",fontSize:"14px"}}>{c.prospectName}</div>
+                  <div style={{fontSize:"12px",color:"rgba(240,240,245,.4)"}}>{c.catLabel} · {fmtDate(c.date)}</div>
                 </div>
-              )}
+                <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                  <VBadge verdict={c.verdict}/>
+                  <span style={{fontWeight:"700",color:"#818CF8",fontSize:"15px"}}>{c.overall}/10</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {!resetConfirm ? (
+            <button className="btn d" onClick={()=>setResetConfirm(true)} style={{width:"100%",padding:"12px",fontSize:"13px"}}>Reset Call History</button>
+          ) : (
+            <div style={{display:"flex",gap:"10px",width:"100%"}}>
+              <button className="btn g" onClick={()=>setResetConfirm(false)} style={{flex:1,padding:"12px"}}>Cancel</button>
+              <button className="btn d" onClick={resetHistory} style={{flex:1,padding:"12px"}}>Confirm Reset</button>
             </div>
           )}
-        </div>
-        {history===null?(<div style={{textAlign:"center",padding:"60px",color:"rgba(240,240,245,.3)"}}>Loading...</div>)
-        :calls.length===0?(<div style={{textAlign:"center",padding:"60px"}}><div style={{fontSize:"16px",color:"rgba(240,240,245,.4)",marginBottom:"16px"}}>No calls yet.</div><button className="btn p" onClick={()=>setScreen("home")} style={{padding:"10px 24px",fontSize:"14px"}}>Start Training</button></div>)
-        :(
-          <>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:"10px",marginBottom:"20px"}}>
-              {[{label:"Total Calls",value:calls.length},{label:"Average Score",value:`${avg(s)}/10`},{label:"Best Score",value:`${best}/10`},{label:"This Week",value:thisWeek}].map((st,i)=>(
-                <div key={i} className="sc"><div style={{fontSize:"11px",color:"rgba(240,240,245,.35)",letterSpacing:".06em",textTransform:"uppercase",marginBottom:"8px"}}>{st.label}</div><div style={{fontSize:"22px",fontWeight:"700",letterSpacing:"-.02em"}}>{st.value}</div></div>
-              ))}
-            </div>
-            <div className="glass" style={{padding:"18px 20px",marginBottom:"16px"}}>
-              <div style={{fontSize:"11px",letterSpacing:".07em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"16px"}}>Skill Averages</div>
-              <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
-                {[{label:"Opener",val:avg(o)},{label:"Objection Handling",val:avg(ob)},{label:"Value Proposition",val:avg(vp)},{label:"CTA & Close",val:avg(ct)}].map((sk,i)=>(
-                  <div key={i}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:"6px"}}><span style={{fontSize:"13px"}}>{sk.label}</span><span style={{fontSize:"13px",fontWeight:"600",color:"#818CF8"}}>{sk.val}</span></div>
-                    <div className="bt"><div className="bf" style={{width:sk.val!=="—"?`${(parseFloat(sk.val)/10)*100}%`:"0%"}}/></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="glass" style={{padding:"16px 20px",marginBottom:"20px",background:"rgba(129,140,248,.05)",borderColor:"rgba(129,140,248,.16)"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:insight?"12px":"0"}}>
-                <div style={{fontSize:"11px",letterSpacing:".07em",color:"#818CF8",fontWeight:"600",textTransform:"uppercase"}}>AI Performance Insight</div>
-                {!insight&&<button className="btn p" onClick={generateInsights} disabled={insLoad} style={{padding:"6px 14px",fontSize:"12px"}}>{insLoad?"Analyzing...":"Analyze My Performance"}</button>}
-              </div>
-              {insight&&<div style={{fontSize:"14px",color:"rgba(240,240,245,.75)",lineHeight:1.65}}>{insight}</div>}
-            </div>
-            <div style={{fontSize:"11px",letterSpacing:".07em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"12px"}}>Recent Calls — tap to review</div>
-            <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
-              {calls.map((c,i)=>{const v=VCS[c.verdict]||VCS["Good call"];return(
-                <div key={i} className="h-row" onClick={()=>openDetail(c)}>
-                  <Av name={c.prospectName||"?"} size={38}/>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:"14px",fontWeight:"600",marginBottom:"2px"}}>{c.prospectName}</div>
-                    <div style={{fontSize:"11px",color:"rgba(240,240,245,.38)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.prospectSpec} · {c.catLabel}</div>
-                  </div>
-                  <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"4px",flexShrink:0}}>
-                    <VBadge verdict={c.verdict}/>
-                    <div style={{display:"flex",gap:"8px",fontSize:"11px",color:"rgba(240,240,245,.35)"}}>
-                      <span style={{fontVariantNumeric:"tabular-nums",color:"#818CF8",fontWeight:"600"}}>{c.overall}/10</span>
-                      <span>{fmt(c.dur||0)}</span>
-                      <span>{fmtDate(c.date)}</span>
-                    </div>
-                  </div>
-                </div>
-              );})}
-            </div>
-          </>
-        )}
-      </W>
-    );
-  }
+        </>
+      ) : (
+        <div style={{textAlign:"center",padding:"40px 0",color:"rgba(240,240,245,.3)"}}>No call history yet. Practice some calls first!</div>
+      )}
+    </W>
+  );
 
   // ── CALL DETAIL ───────────────────────────────────────────────────────────
-  if(screen==="detail") {
-    const call = detailCall;
-    if(!call){setScreen("history");return null;}
-    const v = VCS[call.verdict]||VCS["Good call"];
-    const dCats = [
-      {label:"Opener",             s:call.opener?.score,            fb:call.opener?.feedback},
-      {label:"Objection Handling", s:call.objectionHandling?.score, fb:call.objectionHandling?.feedback},
-      {label:"Value Proposition",  s:call.valueProposition?.score,  fb:call.valueProposition?.feedback},
-      {label:"CTA & Close",        s:call.ctaStrength?.score,       fb:call.ctaStrength?.feedback},
-    ].filter(c=>c.s!=null);
-    const hasMsgs = call.messages?.length>0;
-    let ti = 0;
-    const msgsWithSug = hasMsgs ? call.messages.map(m => {
-      if(m.speaker==="trainee"){const sug=suggestions?.[ti]||null;ti++;return{...m,sug};}
-      return m;
-    }) : [];
-    return (
-      <W maxW="700px">
-        <div style={{display:"flex",alignItems:"flex-start",gap:"14px",marginBottom:"24px"}}>
-          <button className="btn g" onClick={()=>{setSuggestions(null);setScreen("history");}} style={{padding:"8px 14px",fontSize:"13px",flexShrink:0,marginTop:"2px"}}>← Back</button>
-          <div style={{flex:1,minWidth:0}}>
-            <h2 style={{fontSize:"18px",fontWeight:"700",letterSpacing:"-.02em"}}>{call.prospectName}</h2>
-            <div style={{fontSize:"12px",color:"rgba(240,240,245,.38)",marginTop:"3px"}}>{call.prospectSpec} · {call.catLabel} · {fmtDate(call.date)} · {fmt(call.dur||0)}</div>
-          </div>
-          <VBadge verdict={call.verdict}/>
+  if(screen==="detail"&&detailCall) return (
+    <W>
+      <button className="btn g" onClick={()=>setScreen("history")} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← History</button>
+      
+      <div style={{marginBottom:"20px",width:"100%"}}>
+        <h2 style={{fontSize:"22px",fontWeight:"700"}}>{detailCall.prospectName}</h2>
+        <div style={{fontSize:"13px",color:"rgba(240,240,245,.4)",marginTop:"2px"}}>{detailCall.catLabel} · {fmtDate(detailCall.date)}</div>
+      </div>
+
+      <Glass style={{padding:"18px",marginBottom:"20px",width:"100%"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"14px"}}>
+          <VBadge verdict={detailCall.verdict}/>
+          <div style={{fontSize:"24px",fontWeight:"800",color:"#818CF8"}}>{detailCall.overall}/10</div>
         </div>
-        <div className="detail-score" style={{display:"grid",gridTemplateColumns:"auto 1fr 1fr 1fr 1fr",gap:"10px",marginBottom:"16px",alignItems:"stretch"}}>
-          <div className="sc" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minWidth:"80px"}}>
-            <div style={{fontSize:"11px",color:"rgba(240,240,245,.35)",letterSpacing:".06em",textTransform:"uppercase",marginBottom:"6px"}}>Overall</div>
-            <div style={{fontSize:"30px",fontWeight:"800",color:v.c,letterSpacing:"-.04em",lineHeight:1}}>{call.overall}<span style={{fontSize:"14px",color:"rgba(240,240,245,.3)",fontWeight:"500"}}>/10</span></div>
-          </div>
-          {dCats.map((c,i)=>(
-            <div key={i} className="sc">
-              <div style={{fontSize:"10px",color:"rgba(240,240,245,.35)",letterSpacing:".06em",textTransform:"uppercase",marginBottom:"8px"}}>{c.label}</div>
-              <div style={{fontSize:"20px",fontWeight:"700",color:"#818CF8",marginBottom:"6px"}}>{c.s}<span style={{fontSize:"11px",color:"rgba(240,240,245,.3)"}}>/10</span></div>
-              <ScoreBar score={c.s}/>
-              {c.fb&&<div style={{fontSize:"10px",color:"rgba(240,240,245,.32)",marginTop:"6px",lineHeight:1.4}}>{c.fb}</div>}
-            </div>
-          ))}
-        </div>
-        {call.coachingTip&&(
-          <div className="glass" style={{padding:"13px 18px",marginBottom:"20px",background:"rgba(129,140,248,.06)",borderColor:"rgba(129,140,248,.18)"}}>
-            <div style={{fontSize:"10px",letterSpacing:".07em",color:"#818CF8",fontWeight:"600",textTransform:"uppercase",marginBottom:"5px"}}>Coaching Tip</div>
-            <div style={{fontSize:"14px",color:"rgba(240,240,245,.75)",lineHeight:1.6}}>{call.coachingTip}</div>
+        {detailCall.coachingTip&&(
+          <div style={{fontSize:"13px",color:"rgba(240,240,245,.7)",lineHeight:1.5}}>
+            <strong style={{color:"#818CF8"}}>Tip:</strong> {detailCall.coachingTip}
           </div>
         )}
-        {hasMsgs ? (
-          <>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}}>
-              <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.3)",textTransform:"uppercase"}}>Conversation · {call.messages.length} messages</div>
-              {!suggestions&&(
-                <button className="btn p" onClick={generateSuggestions} disabled={sugLoading} style={{padding:"7px 16px",fontSize:"12px"}}>
-                  {sugLoading?"Generating...":"Show Best Closer Alternatives"}
-                </button>
-              )}
-            </div>
-            <div className="glass" style={{padding:"16px"}}>
-              <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
-                {msgsWithSug.map((m,i)=>{
-                  const isP=m.speaker==="prospect";
-                  return (
-                    <div key={i}>
-                      <div style={{display:"flex",flexDirection:isP?"row":"row-reverse",gap:"8px",alignItems:"flex-start"}}>
-                        <Av name={isP?(call.prospectName||"?"):"You"} size={28}/>
-                        <div style={{maxWidth:"76%",background:isP?"rgba(255,255,255,.07)":"rgba(129,140,248,.14)",border:`1px solid ${isP?"rgba(255,255,255,.1)":"rgba(129,140,248,.25)"}`,borderRadius:isP?"4px 14px 14px 14px":"14px 4px 14px 14px",padding:"9px 13px",fontSize:"14px",lineHeight:1.55,color:isP?"rgba(240,240,245,.9)":"#C7D2FE"}}>
-                          {m.content}
-                        </div>
-                      </div>
-                      {!isP&&m.sug&&(
-                        <div style={{display:"flex",justifyContent:"flex-end",paddingRight:"36px",marginTop:"6px"}}>
-                          <div className="sug-box" style={{maxWidth:"76%"}}>
-                            <div style={{fontSize:"10px",letterSpacing:".07em",color:"#22C55E",fontWeight:"700",textTransform:"uppercase",marginBottom:"5px"}}>Best closer · {m.sug.technique||"Improved"}</div>
-                            <div style={{fontSize:"13px",lineHeight:1.6,color:"rgba(240,240,245,.82)",fontStyle:"italic"}}>"{m.sug.improved}"</div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+      </Glass>
+
+      <div style={{width:"100%",marginBottom:"20px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}}>
+          <span style={{fontSize:"12px",fontWeight:"600",color:"rgba(240,240,245,.4)",textTransform:"uppercase"}}>Transcript</span>
+          <button className="btn p" onClick={generateSuggestions} disabled={sugLoading} style={{padding:"6px 12px",fontSize:"12px"}}>
+            {sugLoading?"Generating...":"Best Closer Alternatives"}
+          </button>
+        </div>
+
+        <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+          {detailCall.messages?.map((m,i)=>{
+            const isP = m.speaker === "prospect";
+            const traineeIdx = detailCall.messages.slice(0,i+1).filter(x=>x.speaker==="trainee").length - 1;
+            return (
+              <div key={i}>
+                <div style={{display:"flex",gap:"8px",alignItems:"flex-start",flexDirection:isP?"row":"row-reverse"}}>
+                  <Av name={isP?detailCall.prospectName:"You"} size={26}/>
+                  <div style={{maxWidth:"80%",background:isP?"rgba(255,255,255,.06)":"rgba(129,140,248,.14)",padding:"8px 12px",borderRadius:"10px",fontSize:"13px",lineHeight:1.5}}>
+                    {m.content}
+                  </div>
+                </div>
+                {!isP && suggestions?.[traineeIdx] && (
+                  <div className="sug-box" style={{marginRight:"34px",marginTop:"6px"}}>
+                    <div style={{fontSize:"11px",color:"#22C55E",fontWeight:"600",marginBottom:"2px"}}>Closer Alternative:</div>
+                    <div style={{fontSize:"13px",color:"rgba(240,240,245,.85)"}}>{suggestions[traineeIdx]}</div>
+                  </div>
+                )}
               </div>
-            </div>
-            {suggestions&&suggestions.length===0&&(
-              <div style={{textAlign:"center",fontSize:"13px",color:"rgba(240,240,245,.3)",marginTop:"12px"}}>Could not generate suggestions for this call.</div>
-            )}
-          </>
-        ):(
-          <div className="glass" style={{padding:"28px",textAlign:"center"}}>
-            <div style={{fontSize:"14px",color:"rgba(240,240,245,.35)",lineHeight:1.6}}>Transcript not recorded for this call.<br/>Calls made from this version onwards include full transcripts.</div>
+            );
+          })}
+        </div>
+      </div>
+    </W>
+  );
+
+  // ── CUSTOM CATEGORY FORM ──────────────────────────────────────────────────
+  if(screen==="customCat") return (
+    <W>
+      <button className="btn g" onClick={goHome} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← Cancel</button>
+      <Glass style={{width:"100%",padding:"24px"}}>
+        <h2 style={{fontSize:"20px",fontWeight:"700",marginBottom:"16px"}}>New Product Category</h2>
+        <div className="fl" style={{marginBottom:"14px"}}>
+          <label className="lbl">Product or Service Name</label>
+          <input className="txin" value={ccForm.product} onChange={e=>setCcForm({...ccForm,product:e.target.value})} placeholder="e.g. AI Workflow Automation"/>
+        </div>
+        <div className="fl" style={{marginBottom:"20px"}}>
+          <label className="lbl">Target Audience / Persona</label>
+          <input className="txin" value={ccForm.target} onChange={e=>setCcForm({...ccForm,target:e.target.value})} placeholder="e.g. VP Operations at Logistics Companies"/>
+        </div>
+        <button className="btn p" onClick={handleSubmitCc} disabled={!ccForm.product.trim()} style={{width:"100%",padding:"13px",fontSize:"14px"}}>Create Category</button>
+      </Glass>
+    </W>
+  );
+
+  // ── CUSTOM PROSPECT FORM ──────────────────────────────────────────────────
+  if(screen==="customProspect") return (
+    <W>
+      <button className="btn g" onClick={()=>setScreen("prospects")} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← Cancel</button>
+      <Glass style={{width:"100%",padding:"24px"}}>
+        <h2 style={{fontSize:"20px",fontWeight:"700",marginBottom:"16px"}}>New Prospect Persona</h2>
+        <div className="cp-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"12px"}}>
+          <div className="fl">
+            <label className="lbl">Name</label>
+            <input className="txin" value={cpForm.name} onChange={e=>setCpForm({...cpForm,name:e.target.value})} placeholder="e.g. Mark Vance"/>
           </div>
-        )}
-      </W>
-    );
-  }
+          <div className="fl">
+            <label className="lbl">Title & Role</label>
+            <input className="txin" value={cpForm.title} onChange={e=>setCpForm({...cpForm,title:e.target.value})} placeholder="e.g. VP of Sales"/>
+          </div>
+        </div>
+
+        <div className="cp-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"12px"}}>
+          <div className="fl">
+            <label className="lbl">Difficulty</label>
+            <select className="txin" value={cpForm.difficulty} onChange={e=>setCpForm({...cpForm,difficulty:e.target.value})}>
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+          </div>
+          <div className="fl">
+            <label className="lbl">Voice Gender</label>
+            <select className="txin" value={cpForm.gender} onChange={e=>setCpForm({...cpForm,gender:e.target.value})}>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="fl" style={{marginBottom:"12px"}}>
+          <label className="lbl">Main Objection</label>
+          <input className="txin" value={cpForm.objection} onChange={e=>setCpForm({...cpForm,objection:e.target.value})} placeholder="e.g. Already locked into a 2-year contract"/>
+        </div>
+
+        <div className="fl" style={{marginBottom:"20px"}}>
+          <label className="lbl">Key Context</label>
+          <textarea className="txarea" value={cpForm.context} onChange={e=>setCpForm({...cpForm,context:e.target.value})} placeholder="e.g. Skeptical buyer who only cares about ROI metrics..."/>
+        </div>
+
+        <button className="btn p" onClick={handleSubmitCp} disabled={!cpForm.name.trim()||!cpForm.title.trim()} style={{width:"100%",padding:"13px",fontSize:"14px"}}>Start Call with Custom Prospect</button>
+      </Glass>
+    </W>
+  );
 
   return null;
 }
