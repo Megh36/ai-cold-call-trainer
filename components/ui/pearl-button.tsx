@@ -105,27 +105,27 @@ export const PearlButton: React.FC<PearlButtonProps> = ({
 
         /* Comfortable Padding on all sides & Perfectly Centered Text */
         .pearl-button-sm {
-          min-height: 52px;
+          min-height: 44px;
         }
         .pearl-button-sm .wrap {
-          font-size: 16px;
-          padding: 16px 36px;
+          font-size: 14px;
+          padding: 12px 28px;
         }
 
         .pearl-button-md {
-          min-height: 64px;
+          min-height: 56px;
         }
         .pearl-button-md .wrap {
-          font-size: 18px;
-          padding: 20px 48px;
+          font-size: 16px;
+          padding: 16px 40px;
         }
 
         .pearl-button-lg {
-          min-height: 76px;
+          min-height: 64px;
         }
         .pearl-button-lg .wrap {
-          font-size: 20px;
-          padding: 24px 64px;
+          font-size: 18px;
+          padding: 20px 52px;
         }
 
         .pearl-button .sparkle-2 {
