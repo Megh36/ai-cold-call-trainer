@@ -111,7 +111,7 @@ Rules:
 - Never break character.`;
 };
 
-// ─── Universal Storage Helper (supports browser localStorage & window.storage) ────
+// ─── Storage Helper ──────────────────────────────────────────────────────────
 const storage = {
   get: async (key) => {
     if (typeof window !== "undefined" && window.storage?.get) {
@@ -215,7 +215,7 @@ const loadCustomProspects = async (catId) => {
   } catch { return []; }
 };
 
-// ─── Smart Fallback AI Engine (used if API key fails or unavailable) ─────────────
+// ─── Smart Fallback AI Engine ───────────────────────────────────────────────
 const getFallbackResponse = (msgs, sys, prospect) => {
   const isGreeting = msgs.length === 1 && String(msgs[0]?.content||"").includes("Phone just connected");
   const name = prospect?.name || "Prospect";
@@ -257,13 +257,14 @@ const getFallbackResponse = (msgs, sys, prospect) => {
   return contextualReplies[Math.floor(Math.random() * contextualReplies.length)];
 };
 
-// ─── Styles ──────────────────────────────────────────────────────────────────
+// ─── Responsive Design Styles ───────────────────────────────────────────────
 const css = `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 @keyframes waveBar{from{transform:scaleY(.2)}to{transform:scaleY(1)}}
 @keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .msg{animation:fadeUp .28s ease forwards}
+
 .btn{display:flex;align-items:center;justify-content:center;gap:6px;border:none;font-family:inherit;cursor:pointer;transition:all .18s ease}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
 .btn:not(:disabled):active{transform:scale(.97)}
@@ -273,55 +274,121 @@ const css = `
 .p:not(:disabled):hover{background:rgba(129,140,248,.26);border-color:rgba(129,140,248,.55)}
 .d{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.22);color:#FCA5A5;border-radius:12px}
 .d:not(:disabled):hover{background:rgba(239,68,68,.2)}
+
+/* Responsive Grids & Layouts */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+@media (min-width: 480px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 768px) { .cat-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; } }
+@media (min-width: 1024px) { .cat-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+
+.prospect-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  width: 100%;
+}
+@media (min-width: 768px) { .prospect-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } }
+
 .cat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s ease;display:flex;align-items:center;justify-content:space-between}
 .cat-card:hover{background:rgba(255,255,255,.08);border-color:rgba(129,140,248,.35);transform:translateY(-2px)}
 .cat-custom-card{background:rgba(129,140,248,.06);border:1px solid rgba(129,140,248,.2);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s ease;display:flex;align-items:center;justify-content:space-between}
 .cat-custom-card:hover{background:rgba(129,140,248,.11);border-color:rgba(129,140,248,.38);transform:translateY(-2px)}
 .cat-add{background:rgba(129,140,248,.07);border:1px dashed rgba(129,140,248,.3);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s ease;display:flex;align-items:center;justify-content:space-between}
 .cat-add:hover{background:rgba(129,140,248,.12);border-color:rgba(129,140,248,.5)}
-.p-row{display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:12px;cursor:pointer;transition:all .18s ease}
-.p-row:hover{background:rgba(255,255,255,.08);border-color:rgba(129,140,248,.3)}
-.p-custom-btn{display:flex;align-items:center;gap:14px;padding:16px 18px;background:rgba(129,140,248,.07);border:1px dashed rgba(129,140,248,.3);border-radius:12px;cursor:pointer;transition:all .18s ease}
-.p-custom-btn:hover{background:rgba(129,140,248,.12);border-color:rgba(129,140,248,.5)}
+
+.p-row{display:flex;align-items:center;gap:14px;padding:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;cursor:pointer;transition:all .18s ease}
+.p-row:hover{background:rgba(255,255,255,.08);border-color:rgba(129,140,248,.3);transform:translateY(-2px)}
+
 .h-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:12px;cursor:pointer;transition:background .18s ease}
 .h-row:hover{background:rgba(255,255,255,.065)}
+
 .txin{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#F0F0F5;font-family:inherit;font-size:15px;padding:12px 16px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
 .txin:focus{border-color:rgba(129,140,248,.5);box-shadow:0 0 0 3px rgba(129,140,248,.1)}
 .txin::placeholder{color:rgba(240,240,245,.28)}
 .txin:disabled{opacity:.5}
+
 .txarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#F0F0F5;font-family:inherit;font-size:14px;padding:12px 16px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;resize:vertical;min-height:80px;line-height:1.6}
 .txarea:focus{border-color:rgba(129,140,248,.5);box-shadow:0 0 0 3px rgba(129,140,248,.1)}
 .txarea::placeholder{color:rgba(240,240,245,.28)}
-.trait-pill{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s ease;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:rgba(240,240,245,.6)}
-.trait-pill:hover{background:rgba(255,255,255,.1)}
-.trait-on{background:rgba(129,140,248,.18)!important;border-color:rgba(129,140,248,.45)!important;color:#818CF8!important}
-.bt{background:rgba(255,255,255,.08);border-radius:3px;height:5px;overflow:hidden}
+
+.bt{background:rgba(255,255,255,.08);border-radius:3px;height:6px;overflow:hidden}
 .bf{height:100%;border-radius:3px;background:linear-gradient(90deg,#818CF8,#A78BFA);transition:width 1s cubic-bezier(.4,0,.2,1)}
-.sc{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:14px}
+
 .fl{display:flex;flex-direction:column;gap:6px}
 .lbl{font-size:12px;color:rgba(240,240,245,.45);letter-spacing:.02em}
-.del-dot{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:#FF3B30;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;border:2.5px solid #050508;transition:transform .15s ease,box-shadow .15s ease}
-.del-dot:hover{transform:scale(1.18);box-shadow:0 0 0 4px rgba(255,59,48,.2)}
-.del-minus{color:#fff;font-size:15px;font-weight:800;line-height:1;opacity:0;transition:opacity .12s ease;margin-top:-1px;user-select:none}
+.del-dot{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:#FF3B30;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;border:2.5px solid #050508;transition:transform .15s ease}
+.del-dot:hover{transform:scale(1.18)}
+.del-minus{color:#fff;font-size:15px;font-weight:800;line-height:1;opacity:0;transition:opacity .12s ease;margin-top:-1px}
 .del-dot:hover .del-minus{opacity:1}
+
 .sug-box{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:10px 14px;margin-top:6px}
-.live-tip{background:rgba(129,140,248,.08);border:1px solid rgba(129,140,248,.2);border-radius:8px;padding:7px 11px;margin-top:5px;font-size:12px;color:rgba(200,205,255,.75);line-height:1.5}
-.call-wrap{height:100vh;height:-webkit-fill-available;display:flex;flex-direction:column}
-@media(max-width:500px){
-  .sc-btns{flex-wrap:wrap!important}
-  .sc-btns>.btn{flex:1 1 calc(50% - 5px)!important;min-width:0!important;font-size:13px!important}
-  .detail-score{grid-template-columns:1fr 1fr!important}
-  .cp-2col{grid-template-columns:1fr!important}
-  .cat-card,.cat-custom-card,.cat-add{padding:14px 16px!important}
-  .h-row{flex-wrap:wrap;gap:8px!important}
-  .h-row>div:last-child{width:100%;flex-direction:row!important;justify-content:space-between!important;align-items:center!important}
+.live-tip{background:rgba(129,140,248,.08);border:1px solid rgba(129,140,248,.2);border-radius:8px;padding:8px 12px;margin-top:6px;font-size:12px;color:rgba(200,205,255,.85);line-height:1.5}
+
+/* Responsive Call Layout */
+.call-wrap {
+  height: 100vh;
+  height: -webkit-fill-available;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
-::-webkit-scrollbar{width:3px}
+
+@media (min-width: 768px) {
+  .call-wrap {
+    max-width: 1040px;
+    height: 85vh;
+    max-height: 800px;
+    margin: 30px auto;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,.09);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    grid-template-rows: 1fr;
+    overflow: hidden;
+  }
+  .call-sidebar {
+    background: rgba(255,255,255,.02);
+    border-right: 1px solid rgba(255,255,255,.07);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .call-main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: rgba(5,5,8,.6);
+  }
+}
+
+/* Two-column layout helper for scorecard & history */
+.two-col-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .two-col-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+}
+
+::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:4px}
 `;
 
-const FONT = "-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',sans-serif";
+const FONT = "-apple-system,BlinkMacSystemFont,'Plus Jakarta Sans','Inter',sans-serif";
 const BG   = "radial-gradient(ellipse 80% 60% at 20% 10%,rgba(129,140,248,.09) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 90%,rgba(167,139,250,.07) 0%,transparent 60%),#050508";
 const CBG  = "radial-gradient(ellipse 70% 40% at 50% 0%,rgba(129,140,248,.12) 0%,transparent 60%),#050508";
 const STC  = {"On call":"#22C55E","Connecting...":"#F59E0B","Listening...":"#818CF8","Thinking...":"#F59E0B","Speaking...":"#C084FC","Scoring...":"#F59E0B"};
@@ -349,17 +416,17 @@ function Av({name,size=44}) {
 }
 function DBadge({diff}) {
   const d=DC[diff]||DC.Medium;
-  return <span style={{background:`rgba(${d.r},.1)`,border:`1px solid rgba(${d.r},.25)`,color:d.c,borderRadius:"6px",padding:"2px 8px",fontSize:"11px",fontWeight:"600"}}>{diff}</span>;
+  return <span style={{background:`rgba(${d.r},.1)`,border:`1px solid rgba(${d.r},.25)`,color:d.c,borderRadius:"6px",padding:"3px 9px",fontSize:"11px",fontWeight:"600"}}>{diff}</span>;
 }
 function VBadge({verdict}) {
   const v=VCS[verdict]||VCS["Good call"];
-  return <span style={{display:"inline-block",background:`rgba(${v.r},.1)`,border:`1px solid rgba(${v.r},.25)`,color:v.c,borderRadius:"20px",padding:"3px 10px",fontSize:"12px",fontWeight:"600"}}>{verdict}</span>;
+  return <span style={{display:"inline-block",background:`rgba(${v.r},.1)`,border:`1px solid rgba(${v.r},.25)`,color:v.c,borderRadius:"20px",padding:"4px 12px",fontSize:"12px",fontWeight:"600"}}>{verdict}</span>;
 }
 function StatusPill({status}) {
   const c=STC[status]||"#6B7280";
   return (
-    <div style={{display:"flex",alignItems:"center",gap:"6px",fontSize:"13px",color:"rgba(240,240,245,.55)"}}>
-      <span style={{width:"6px",height:"6px",borderRadius:"50%",background:c,display:"inline-block",animation:status!=="On call"?"blink 1.1s ease-in-out infinite":"none"}}/>
+    <div style={{display:"flex",alignItems:"center",gap:"6px",fontSize:"13px",color:"rgba(240,240,245,.6)"}}>
+      <span style={{width:"7px",height:"7px",borderRadius:"50%",background:c,display:"inline-block",animation:status!=="On call"?"blink 1.1s ease-in-out infinite":"none"}}/>
       {status}
     </div>
   );
@@ -369,12 +436,18 @@ function ScoreBar({score}) {
 }
 function TopNav({onHistory, onApiKey, hasKey}) {
   return (
-    <div style={{display:"flex",justifyContent:"flex-end",gap:"10px",width:"100%",marginBottom:"24px"}}>
-      <button className="btn g" onClick={onApiKey} style={{padding:"9px 14px",fontSize:"12px"}}>
-        <span style={{width:"7px",height:"7px",borderRadius:"50%",background:hasKey?"#22C55E":"#F59E0B",marginRight:"4px"}}/>
-        {hasKey ? "API Key Set" : "Add API Key"}
-      </button>
-      <button className="btn g" onClick={onHistory} style={{padding:"9px 16px",fontSize:"13px"}}>Call History</button>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",marginBottom:"28px"}}>
+      <div style={{fontSize:"14px",fontWeight:"700",letterSpacing:"-.02em",color:"rgba(240,240,245,.9)",display:"flex",alignItems:"center",gap:"8px"}}>
+        <span style={{background:"rgba(129,140,248,.2)",border:"1px solid rgba(129,140,248,.4)",color:"#818CF8",padding:"4px 10px",borderRadius:"8px",fontSize:"11px",fontWeight:"800"}}>AI</span>
+        Cold Call Trainer
+      </div>
+      <div style={{display:"flex",gap:"10px"}}>
+        <button className="btn g" onClick={onApiKey} style={{padding:"8px 14px",fontSize:"12px"}}>
+          <span style={{width:"7px",height:"7px",borderRadius:"50%",background:hasKey?"#22C55E":"#F59E0B",marginRight:"4px"}}/>
+          {hasKey ? "API Key Set" : "Add API Key"}
+        </button>
+        <button className="btn g" onClick={onHistory} style={{padding:"8px 16px",fontSize:"13px"}}>Call History</button>
+      </div>
     </div>
   );
 }
@@ -386,7 +459,7 @@ function Glass({children,padding="24px",style={}}) {
     </div>
   );
 }
-function W({children,maxW="680px"}) {
+function W({children,maxW="1100px"}) {
   return (
     <div style={{minHeight:"100vh",background:BG,color:"#F0F0F5",fontFamily:FONT,display:"flex",flexDirection:"column",alignItems:"center",padding:"28px 20px 48px"}}>
       <style>{css}</style>
@@ -469,21 +542,8 @@ export default function ColdCallTrainer() {
     } catch {}
   };
 
-  const getVoice = (gender="neutral") => {
-    if (!window.speechSynthesis) return null;
-    const voices = window.speechSynthesis.getVoices();
-    if (!voices.length) return null;
-
-    const list = gender === "female" ? FEMALE_VX : MALE_VX;
-    let match = voices.find(v => v.lang.startsWith("en") && list.some(name => v.name.toLowerCase().includes(name)));
-    if (!match) match = voices.find(v => list.some(name => v.name.toLowerCase().includes(name)));
-    if (!match) match = voices.find(v => v.lang.startsWith("en"));
-    return match || voices[0];
-  };
-
   const speak = (text, gender="neutral", onEnd) => {
     if(!window.speechSynthesis || !text) { onEnd?.(); return; }
-
     window.speechSynthesis.cancel();
 
     const doSpeak = (voices) => {
@@ -516,7 +576,6 @@ export default function ColdCallTrainer() {
   };
 
   const callClaude = async (msgs, sys, max=1000) => {
-    // 1. Try server route /api/claude
     try {
       const headers = { "Content-Type": "application/json" };
       if (apiKey) headers["x-api-key"] = apiKey;
@@ -534,10 +593,9 @@ export default function ColdCallTrainer() {
         }
       }
     } catch (e) {
-      console.warn("Server API route failed, trying direct/fallback:", e);
+      console.warn("Server API route failed, trying fallback...", e);
     }
 
-    // 2. Direct browser call if user provided local API key
     if (apiKey) {
       try {
         const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -566,7 +624,6 @@ export default function ColdCallTrainer() {
       }
     }
 
-    // 3. Fallback AI Engine
     return getFallbackResponse(msgs, sys, prospect);
   };
 
@@ -760,62 +817,63 @@ Return ONLY valid JSON, no markdown:
 
   // ── HOME ──────────────────────────────────────────────────────────────────
   if(screen==="home") return (
-    <W>
+    <W maxW="1100px">
       <TopNav onHistory={()=>{setHistory(null);setScreen("history");}} onApiKey={()=>setShowKeyModal(true)} hasKey={!!apiKey}/>
       
       <div style={{textAlign:"center",marginBottom:"44px",width:"100%"}}>
-        <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.35)",textTransform:"uppercase",marginBottom:"14px"}}>Sales Training</div>
-        <h1 style={{fontSize:"clamp(28px,6vw,52px)",fontWeight:"800",letterSpacing:"-.04em",lineHeight:1.05,margin:0}}>
+        <div style={{fontSize:"11px",letterSpacing:".1em",color:"rgba(240,240,245,.4)",textTransform:"uppercase",marginBottom:"16px",fontWeight:"700"}}>AI Sales Pitch Roleplay</div>
+        <h1 style={{fontSize:"clamp(32px,5vw,56px)",fontWeight:"800",letterSpacing:"-.04em",lineHeight:1.08,margin:0}}>
           Train like a pro.<br/>
           <span style={{color:"#818CF8"}}>Close like a closer.</span>
         </h1>
-        <p style={{color:"rgba(240,240,245,.38)",fontSize:"clamp(13px,2vw,15px)",marginTop:"14px",lineHeight:1.65,maxWidth:"420px",margin:"14px auto 0"}}>
-          Practice any cold call against AI prospects. Live coaching, objection tracking, and full analysis after every session.
+        <p style={{color:"rgba(240,240,245,.45)",fontSize:"clamp(14px,1.8vw,16px)",marginTop:"16px",lineHeight:1.65,maxWidth:"540px",margin:"16px auto 0"}}>
+          Practice cold calls against realistic AI prospects across 8 industries. Get live coaching tips, objection handling, and detailed post-call scorecards.
         </p>
       </div>
 
-      <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"14px",width:"100%"}}>What are you selling?</div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px",width:"100%"}}>
+        <div style={{fontSize:"12px",letterSpacing:".08em",color:"rgba(240,240,245,.5)",textTransform:"uppercase",fontWeight:"700"}}>Select Product Industry</div>
+        <button className="btn p" onClick={()=>setScreen("customCat")} style={{padding:"8px 14px",fontSize:"12px"}}>+ Custom Category</button>
+      </div>
       
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:"10px",marginBottom:"20px"}}>
+      <div className="cat-grid" style={{marginBottom:"24px"}}>
         {CATEGORIES.map(c=>(
           <div key={c.id} className="cat-card" onClick={()=>selectCategory(c)}>
-            <div style={{fontSize:"14px",fontWeight:"600",color:"rgba(240,240,245,.9)"}}>{c.label}</div>
-            <span style={{color:"rgba(240,240,245,.3)",fontSize:"14px"}}>→</span>
+            <div style={{fontSize:"15px",fontWeight:"600",color:"rgba(240,240,245,.95)"}}>{c.label}</div>
+            <span style={{color:"rgba(129,140,248,.7)",fontSize:"16px",fontWeight:"700"}}>→</span>
           </div>
         ))}
       </div>
 
       {customCats.length > 0 && (
         <>
-          <div style={{fontSize:"11px",letterSpacing:".08em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"10px",marginTop:"14px",width:"100%"}}>Your Custom Categories</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:"10px",marginBottom:"20px"}}>
+          <div style={{fontSize:"12px",letterSpacing:".08em",color:"rgba(240,240,245,.5)",textTransform:"uppercase",marginBottom:"12px",marginTop:"24px",width:"100%",fontWeight:"700"}}>Your Custom Categories</div>
+          <div className="cat-grid" style={{marginBottom:"20px"}}>
             {customCats.map(c=>(
               <div key={c.id} className="cat-custom-card" style={{position:"relative"}} onClick={()=>selectCategory(c)}>
                 <div className="del-dot" onClick={(e)=>deleteCustomCat(c.id, e)}>
                   <span className="del-minus">−</span>
                 </div>
                 <div>
-                  <div style={{fontSize:"14px",fontWeight:"600",color:"#818CF8"}}>{c.label}</div>
-                  {c.target&&<div style={{fontSize:"11px",color:"rgba(240,240,245,.35)",marginTop:"2px"}}>{c.target}</div>}
+                  <div style={{fontSize:"15px",fontWeight:"600",color:"#818CF8"}}>{c.label}</div>
+                  {c.target&&<div style={{fontSize:"12px",color:"rgba(240,240,245,.4)",marginTop:"2px"}}>{c.target}</div>}
                 </div>
-                <span style={{color:"#818CF8",fontSize:"14px"}}>→</span>
+                <span style={{color:"#818CF8",fontSize:"16px",fontWeight:"700"}}>→</span>
               </div>
             ))}
           </div>
         </>
       )}
 
-      <button className="btn p" onClick={()=>setScreen("customCat")} style={{width:"100%",padding:"14px",fontSize:"14px"}}>+ Create Custom Product Category</button>
-
       {/* API Key Modal */}
       {showKeyModal && (
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:"20px"}}>
-          <Glass style={{width:"100%",maxWidth:"420px",padding:"24px"}}>
-            <h3 style={{fontSize:"18px",fontWeight:"700",marginBottom:"8px"}}>Anthropic API Key</h3>
+          <Glass style={{width:"100%",maxWidth:"440px",padding:"28px"}}>
+            <h3 style={{fontSize:"18px",fontWeight:"700",marginBottom:"8px"}}>Anthropic API Key Settings</h3>
             <p style={{fontSize:"13px",color:"rgba(240,240,245,.5)",marginBottom:"18px",lineHeight:1.5}}>
-              Optional: Enter your key to unlock full live Claude responses. If omitted, Vercel environment variable or Smart AI Fallback mode will be used.
+              Enter your Anthropic API Key to use Claude live in your browser. Leave blank if your Vercel project already has `ANTHROPIC_API_KEY` configured or to use Smart Fallback Mode.
             </p>
-            <input className="txin" value={keyInput} onChange={e=>setKeyInput(e.target.value)} placeholder="sk-ant-api03-..." style={{marginBottom:"16px"}}/>
+            <input className="txin" value={keyInput} onChange={e=>setKeyInput(e.target.value)} placeholder="sk-ant-api03-..." style={{marginBottom:"18px"}}/>
             <div style={{display:"flex",gap:"10px"}}>
               <button className="btn g" onClick={()=>setShowKeyModal(false)} style={{flex:1,padding:"11px"}}>Cancel</button>
               <button className="btn p" onClick={()=>saveApiKey(keyInput)} style={{flex:1,padding:"11px"}}>Save Key</button>
@@ -826,99 +884,123 @@ Return ONLY valid JSON, no markdown:
     </W>
   );
 
-  // ── CALL SCREEN ───────────────────────────────────────────────────────────
+  // ── CALL SCREEN (Fully Responsive Layout) ───────────────────────────────
   if(screen==="call") return (
     <>
       <style>{css}</style>
-      <div className="call-wrap" style={{background:CBG,color:"#F0F0F5",fontFamily:FONT,maxWidth:"600px",margin:"0 auto"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px 16px",borderBottom:"1px solid rgba(255,255,255,.07)",flexShrink:0}}>
-          <div>
-            <div style={{fontWeight:"600",fontSize:"16px"}}>{prospect?.name}</div>
-            <div style={{color:"rgba(240,240,245,.38)",fontSize:"12px",marginTop:"1px"}}>{prospect?.spec||prospect?.title}</div>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
-            <StatusPill status={status}/>
-            <div style={{fontVariantNumeric:"tabular-nums",fontSize:"14px",color:"rgba(240,240,245,.4)",fontWeight:"500"}}>{fmt(dur)}</div>
-          </div>
-        </div>
-
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"24px 20px 16px",gap:"14px",flexShrink:0}}>
-          <Av name={prospect?.name||"?"} size={64}/>
-          <Waveform active={aiSpeak}/>
-          {loading&&!aiSpeak&&<div style={{fontSize:"13px",color:"rgba(240,240,245,.3)",animation:"blink 1.2s ease-in-out infinite"}}>{status==="Connecting..."?"Dialing...":"..."}</div>}
-        </div>
-
-        <div ref={txRef} className="glass" style={{flex:1,margin:"0 14px",padding:"14px",overflowY:"auto",display:"flex",flexDirection:"column",gap:"10px",minHeight:0}}>
-          {messages.length===0&&<div style={{color:"rgba(240,240,245,.2)",fontSize:"13px",textAlign:"center",margin:"auto"}}>{loading?"Connecting...":"Say something to start"}</div>}
-          {messages.map((m,i)=>{
-            const isP=m.speaker==="prospect";
-            const contentText = (m.content && m.content.trim()) ? m.content : (isP ? `(Hello, ${prospect?.name||'Prospect'} here)` : '...');
-            return(
-              <div key={i} className="msg">
-                <div style={{display:"flex",flexDirection:isP?"row":"row-reverse",gap:"8px",alignItems:"flex-start"}}>
-                  <Av name={isP?(prospect?.name||"?"):"You"} size={28}/>
-                  <div style={{maxWidth:"78%",background:isP?"rgba(255,255,255,.07)":"rgba(129,140,248,.14)",border:`1px solid ${isP?"rgba(255,255,255,.1)":"rgba(129,140,248,.25)"}`,borderRadius:isP?"4px 14px 14px 14px":"14px 4px 14px 14px",padding:"9px 13px",fontSize:"14px",lineHeight:1.55,color:isP?"rgba(240,240,245,.9)":"#C7D2FE"}}>
-                    {contentText}
-                  </div>
-                </div>
-                {isP&&liveTips[i]&&(
-                  <div style={{display:"flex",paddingLeft:"36px",marginTop:"5px"}}>
-                    <div className="live-tip">
-                      <span style={{color:"#818CF8",marginRight:"5px",fontSize:"10px",verticalAlign:"middle"}}>↗</span>
-                      {liveTips[i]}
-                    </div>
-                  </div>
-                )}
+      <div style={{minHeight:"100vh",background:BG,color:"#F0F0F5",fontFamily:FONT,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"10px"}}>
+        <div className="call-wrap">
+          
+          {/* Desktop Left Sidebar / Mobile Header Container */}
+          <div className="call-sidebar" style={{background:CBG}}>
+            <div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"20px"}}>
+                <button className="btn g" onClick={endCall} style={{padding:"6px 12px",fontSize:"12px"}}>← Exit</button>
+                <StatusPill status={status}/>
               </div>
-            );
-          })}
-        </div>
 
-        <div style={{padding:"14px",borderTop:"1px solid rgba(255,255,255,.07)",flexShrink:0}}>
-          <div style={{display:"flex",gap:"8px",marginBottom:"10px"}}>
-            <input className="txin" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send(input)} placeholder={listen?"Listening...":aiSpeak?"Prospect is speaking...":"Type your reply..."} disabled={loading||aiSpeak||listen}/>
-            <button className="btn p" onClick={()=>send(input)} disabled={loading||aiSpeak||listen||!input.trim()} style={{padding:"0 18px",fontSize:"14px",whiteSpace:"nowrap"}}>Send</button>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center",gap:"14px",marginBottom:"24px"}}>
+                <Av name={prospect?.name||"?"} size={72}/>
+                <div>
+                  <div style={{fontWeight:"700",fontSize:"18px",color:"#F0F0F5"}}>{prospect?.name}</div>
+                  <div style={{color:"rgba(240,240,245,.5)",fontSize:"13px",marginTop:"3px"}}>{prospect?.spec||prospect?.title}</div>
+                  <div style={{marginTop:"8px"}}><DBadge diff={prospect?.diff||prospect?.difficulty||"Medium"}/></div>
+                </div>
+              </div>
+
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"12px",margin:"16px 0"}}>
+                <Waveform active={aiSpeak}/>
+                <div style={{fontVariantNumeric:"tabular-nums",fontSize:"16px",color:"rgba(240,240,245,.6)",fontWeight:"600"}}>{fmt(dur)}</div>
+              </div>
+            </div>
+
+            <div style={{display:"flex",flexDirection:"column",gap:"10px",width:"100%"}}>
+              {voiceOk&&<button onClick={toggleMic} className={`btn g${listen?" mon":""}`} disabled={loading||aiSpeak} style={{width:"100%",padding:"12px",fontSize:"13px"}}>{listen?"Stop Listening":"Voice Speak"}</button>}
+              <button onClick={endCall} className="btn d" disabled={loading} style={{width:"100%",padding:"12px",fontSize:"13px"}}>End Call & Score</button>
+            </div>
           </div>
-          <div style={{display:"flex",gap:"8px"}}>
-            {voiceOk&&<button onClick={toggleMic} className={`btn g${listen?" mon":""}`} disabled={loading||aiSpeak} style={{flex:1,padding:"11px",fontSize:"13px"}}>{listen?"Stop Listening":"Speak"}</button>}
-            <button onClick={endCall} className="btn d" disabled={loading} style={{flex:voiceOk?1:2,padding:"11px",fontSize:"13px"}}>End Call</button>
+
+          {/* Main Chat Area */}
+          <div className="call-main">
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(255,255,255,.07)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{fontSize:"13px",fontWeight:"600",color:"rgba(240,240,245,.6)",letterSpacing:".04em"}}>LIVE TRANSCRIPT</div>
+              {loading&&!aiSpeak&&<div style={{fontSize:"12px",color:"rgba(240,240,245,.4)",animation:"blink 1.2s ease-in-out infinite"}}>Prospect is thinking...</div>}
+            </div>
+
+            <div ref={txRef} style={{flex:1,padding:"20px",overflowY:"auto",display:"flex",flexDirection:"column",gap:"14px",minHeight:0}}>
+              {messages.length===0&&<div style={{color:"rgba(240,240,245,.3)",fontSize:"14px",textAlign:"center",margin:"auto"}}>{loading?"Connecting call...":"Say something to start pitching"}</div>}
+              {messages.map((m,i)=>{
+                const isP=m.speaker==="prospect";
+                const contentText = (m.content && m.content.trim()) ? m.content : (isP ? `(Hello, ${prospect?.name||'Prospect'} here)` : '...');
+                return(
+                  <div key={i} className="msg">
+                    <div style={{display:"flex",flexDirection:isP?"row":"row-reverse",gap:"10px",alignItems:"flex-start"}}>
+                      <Av name={isP?(prospect?.name||"?"):"You"} size={32}/>
+                      <div style={{maxWidth:"80%",background:isP?"rgba(255,255,255,.07)":"rgba(129,140,248,.16)",border:`1px solid ${isP?"rgba(255,255,255,.1)":"rgba(129,140,248,.3)"}`,borderRadius:isP?"4px 16px 16px 16px":"16px 4px 16px 16px",padding:"11px 16px",fontSize:"14px",lineHeight:1.6,color:isP?"rgba(240,240,245,.95)":"#C7D2FE"}}>
+                        {contentText}
+                      </div>
+                    </div>
+                    {isP&&liveTips[i]&&(
+                      <div style={{display:"flex",paddingLeft:"42px",marginTop:"6px"}}>
+                        <div className="live-tip">
+                          <span style={{color:"#818CF8",marginRight:"6px",fontSize:"11px",fontWeight:"bold"}}>↗ COACHING TIP:</span>
+                          {liveTips[i]}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{padding:"16px",borderTop:"1px solid rgba(255,255,255,.07)",background:"rgba(0,0,0,.2)"}}>
+              <div style={{display:"flex",gap:"10px"}}>
+                <input className="txin" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send(input)} placeholder={listen?"Listening to your voice...":aiSpeak?"Prospect speaking...":"Type your reply and press Enter..."} disabled={loading||aiSpeak||listen}/>
+                <button className="btn p" onClick={()=>send(input)} disabled={loading||aiSpeak||listen||!input.trim()} style={{padding:"0 24px",fontSize:"14px",whiteSpace:"nowrap"}}>Send</button>
+              </div>
+            </div>
           </div>
+
         </div>
       </div>
     </>
   );
 
-  // ── PROSPECTS ─────────────────────────────────────────────────────────────
+  // ── PROSPECTS SCREEN ──────────────────────────────────────────────────────
   if(screen==="prospects") {
     const list = [...(PROSPECTS[cat?.id]||[]), ...savedProspects];
     return (
-      <W>
+      <W maxW="1000px">
         <button className="btn g" onClick={goHome} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← Home</button>
-        <div style={{marginBottom:"24px",width:"100%"}}>
-          <div style={{fontSize:"11px",letterSpacing:".08em",color:"#818CF8",textTransform:"uppercase",fontWeight:"600",marginBottom:"4px"}}>{cat?.label}</div>
-          <h2 style={{fontSize:"24px",fontWeight:"700",margin:0}}>Select a Prospect</h2>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:"24px",width:"100%"}}>
+          <div>
+            <div style={{fontSize:"12px",letterSpacing:".08em",color:"#818CF8",textTransform:"uppercase",fontWeight:"700",marginBottom:"4px"}}>{cat?.label}</div>
+            <h2 style={{fontSize:"28px",fontWeight:"700",margin:0}}>Select a Prospect</h2>
+          </div>
+          <button className="btn p" onClick={()=>setScreen("customProspect")} style={{padding:"10px 16px",fontSize:"13px"}}>+ Custom Prospect</button>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:"10px",width:"100%",marginBottom:"20px"}}>
+
+        <div className="prospect-grid" style={{marginBottom:"24px"}}>
           {list.map((p,i)=>(
             <div key={i} className="p-row" onClick={()=>startCall(p)}>
-              <Av name={p.name} size={42}/>
+              <Av name={p.name} size={48}/>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"2px"}}>
-                  <span style={{fontWeight:"600",fontSize:"15px",color:"rgba(240,240,245,.9)"}}>{p.name}</span>
+                <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"4px"}}>
+                  <span style={{fontWeight:"700",fontSize:"16px",color:"rgba(240,240,245,.95)"}}>{p.name}</span>
                   <DBadge diff={p.diff||p.difficulty}/>
                 </div>
-                <div style={{color:"rgba(240,240,245,.4)",fontSize:"13px"}}>{p.spec||p.title}</div>
+                <div style={{color:"rgba(240,240,245,.45)",fontSize:"13px"}}>{p.spec||p.title}</div>
+                {p.ctx && <div style={{color:"rgba(240,240,245,.3)",fontSize:"12px",marginTop:"6px",lineHeight:1.4,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{p.ctx}</div>}
               </div>
-              <span style={{color:"rgba(240,240,245,.3)",fontSize:"14px"}}>Call →</span>
+              <span style={{color:"#818CF8",fontSize:"15px",fontWeight:"700"}}>Call →</span>
             </div>
           ))}
         </div>
-        <button className="btn p" onClick={()=>setScreen("customProspect")} style={{width:"100%",padding:"14px",fontSize:"14px"}}>+ Create Custom Prospect Persona</button>
       </W>
     );
   }
 
-  // ── SCORECARD ─────────────────────────────────────────────────────────────
+  // ── SCORECARD SCREEN (Responsive Grid) ──────────────────────────────────
   if(screen==="scorecard") {
     const v=VCS[score?.verdict]||VCS["Good call"];
     const scoreCats=[
@@ -927,146 +1009,156 @@ Return ONLY valid JSON, no markdown:
       {label:"Value Proposition",  s:score?.valueProposition,  fb:score?.valueProposition?.feedback},
       {label:"CTA & Close",        s:score?.ctaStrength,       fb:score?.ctaStrength?.feedback},
     ].filter(c=>c.s?.score!=null);
+
     return (
-      <W>
-        <div style={{textAlign:"center",marginBottom:"28px",width:"100%"}}>
-          <div style={{fontSize:"64px",fontWeight:"800",letterSpacing:"-.05em",lineHeight:1,color:v.c,marginBottom:"10px"}}>
-            {score?.overall}<span style={{fontSize:"28px",color:"rgba(240,240,245,.25)",fontWeight:"600"}}>/10</span>
+      <W maxW="900px">
+        <div style={{textAlign:"center",marginBottom:"32px",width:"100%"}}>
+          <div style={{fontSize:"72px",fontWeight:"800",letterSpacing:"-.05em",lineHeight:1,color:v.c,marginBottom:"12px"}}>
+            {score?.overall}<span style={{fontSize:"32px",color:"rgba(240,240,245,.3)",fontWeight:"600"}}>/10</span>
           </div>
           <VBadge verdict={score?.verdict}/>
-          <div style={{color:"rgba(240,240,245,.35)",fontSize:"13px",marginTop:"10px"}}>{prospect?.name} · {score?.exchanges} exchanges · {fmt(score?.dur||0)}</div>
+          <div style={{color:"rgba(240,240,245,.4)",fontSize:"14px",marginTop:"12px"}}>{prospect?.name} · {score?.exchanges} exchanges · {fmt(score?.dur||0)}</div>
         </div>
 
-        {scoreCats.length>0&&(
-          <Glass style={{padding:"20px",marginBottom:"14px",width:"100%"}}>
-            <div style={{fontSize:"11px",letterSpacing:".07em",color:"rgba(240,240,245,.3)",textTransform:"uppercase",marginBottom:"18px"}}>Breakdown</div>
-            <div style={{display:"flex",flexDirection:"column",gap:"18px"}}>
-              {scoreCats.map((c,i)=>(
-                <div key={i}>
-                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:"7px"}}><span style={{fontSize:"14px"}}>{c.label}</span><span style={{fontVariantNumeric:"tabular-nums",fontSize:"14px",fontWeight:"700",color:"#818CF8"}}>{c.s.score}/10</span></div>
-                  <ScoreBar score={c.s.score}/>
-                  {c.fb&&<div style={{fontSize:"12px",color:"rgba(240,240,245,.38)",marginTop:"5px",lineHeight:1.5}}>{c.fb}</div>}
-                </div>
-              ))}
-            </div>
-          </Glass>
-        )}
+        <div className="two-col-layout" style={{marginBottom:"24px"}}>
+          {scoreCats.length>0&&(
+            <Glass style={{padding:"24px",width:"100%"}}>
+              <div style={{fontSize:"12px",letterSpacing:".08em",color:"rgba(240,240,245,.4)",textTransform:"uppercase",fontWeight:"700",marginBottom:"20px"}}>Skill Breakdown</div>
+              <div style={{display:"flex",flexDirection:"column",gap:"20px"}}>
+                {scoreCats.map((c,i)=>(
+                  <div key={i}>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:"8px"}}><span style={{fontSize:"14px",fontWeight:"600"}}>{c.label}</span><span style={{fontVariantNumeric:"tabular-nums",fontSize:"14px",fontWeight:"700",color:"#818CF8"}}>{c.s.score}/10</span></div>
+                    <ScoreBar score={c.s.score}/>
+                    {c.fb&&<div style={{fontSize:"12px",color:"rgba(240,240,245,.45)",marginTop:"6px",lineHeight:1.5}}>{c.fb}</div>}
+                  </div>
+                ))}
+              </div>
+            </Glass>
+          )}
 
-        {score?.coachingTip&&(
-          <Glass style={{padding:"16px 20px",marginBottom:"20px",width:"100%",background:"rgba(129,140,248,.06)",borderColor:"rgba(129,140,248,.18)"}}>
-            <div style={{fontSize:"11px",letterSpacing:".07em",color:"#818CF8",fontWeight:"600",textTransform:"uppercase",marginBottom:"8px"}}>Coaching Tip</div>
-            <div style={{fontSize:"14px",color:"rgba(240,240,245,.75)",lineHeight:1.65}}>{score.coachingTip}</div>
-          </Glass>
-        )}
-
-        <div className="sc-btns" style={{display:"flex",gap:"10px",marginBottom:"10px",width:"100%"}}>
-          <button className="btn g" onClick={goHome} style={{flex:1,padding:"12px",fontSize:"14px"}}>Home</button>
-          <button className="btn g" onClick={()=>setScreen("prospects")} style={{flex:1,padding:"12px",fontSize:"14px"}}>Change Prospect</button>
+          {score?.coachingTip&&(
+            <Glass style={{padding:"24px",width:"100%",background:"rgba(129,140,248,.05)",borderColor:"rgba(129,140,248,.2)",display:"flex",flexDirection:"column",justifyContent:"space-between"}}>
+              <div>
+                <div style={{fontSize:"12px",letterSpacing:".08em",color:"#818CF8",fontWeight:"700",textTransform:"uppercase",marginBottom:"12px"}}>AI Coaching Insight</div>
+                <div style={{fontSize:"15px",color:"rgba(240,240,245,.85)",lineHeight:1.7}}>{score.coachingTip}</div>
+              </div>
+              <div style={{marginTop:"24px",paddingTop:"16px",borderTop:"1px solid rgba(255,255,255,.08)",fontSize:"13px",color:"rgba(240,240,245,.4)"}}>
+                Review past sessions anytime in Call History to compare performance trends.
+              </div>
+            </Glass>
+          )}
         </div>
-        <button className="btn p" onClick={()=>startCall(prospect)} style={{width:"100%",padding:"14px",fontSize:"15px"}}>Try Again</button>
+
+        <div style={{display:"flex",gap:"12px",width:"100%",maxWidth:"500px",margin:"0 auto"}}>
+          <button className="btn g" onClick={goHome} style={{flex:1,padding:"14px",fontSize:"14px"}}>Home</button>
+          <button className="btn g" onClick={()=>setScreen("prospects")} style={{flex:1,padding:"14px",fontSize:"14px"}}>Change Prospect</button>
+          <button className="btn p" onClick={()=>startCall(prospect)} style={{flex:1.5,padding:"14px",fontSize:"14px"}}>Try Again</button>
+        </div>
       </W>
     );
   }
 
-  // ── HISTORY ───────────────────────────────────────────────────────────────
+  // ── HISTORY SCREEN (Responsive Split) ───────────────────────────────────
   if(screen==="history") return (
-    <W>
+    <W maxW="1000px">
       <button className="btn g" onClick={goHome} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← Home</button>
       <div style={{marginBottom:"24px",width:"100%"}}>
-        <h2 style={{fontSize:"24px",fontWeight:"700",margin:0}}>Call History</h2>
+        <h2 style={{fontSize:"28px",fontWeight:"700",margin:0}}>Call History & Insights</h2>
       </div>
 
       {history?.length > 0 ? (
         <>
-          <Glass style={{padding:"18px",marginBottom:"20px",width:"100%"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}}>
-              <span style={{fontSize:"12px",fontWeight:"600",color:"#818CF8",textTransform:"uppercase",letterSpacing:".06em"}}>AI Performance Insights</span>
-              <button className="btn p" onClick={generateInsights} disabled={insLoad} style={{padding:"6px 12px",fontSize:"12px"}}>{insLoad?"Analyzing...":"Generate Insights"}</button>
+          <Glass style={{padding:"22px",marginBottom:"24px",width:"100%"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"14px"}}>
+              <span style={{fontSize:"12px",fontWeight:"700",color:"#818CF8",textTransform:"uppercase",letterSpacing:".06em"}}>Aggregate Performance Analysis</span>
+              <button className="btn p" onClick={generateInsights} disabled={insLoad} style={{padding:"8px 14px",fontSize:"12px"}}>{insLoad?"Analyzing...":"Generate Insights"}</button>
             </div>
             {insight ? (
-              <div style={{fontSize:"13px",color:"rgba(240,240,245,.8)",lineHeight:1.6}}>{insight}</div>
+              <div style={{fontSize:"14px",color:"rgba(240,240,245,.85)",lineHeight:1.65}}>{insight}</div>
             ) : (
-              <div style={{fontSize:"13px",color:"rgba(240,240,245,.35)"}}>Click generate to get an overall AI analysis of your calls.</div>
+              <div style={{fontSize:"13px",color:"rgba(240,240,245,.4)"}}>Click generate to get an overall AI analysis of your call history.</div>
             )}
           </Glass>
 
-          <div style={{display:"flex",flexDirection:"column",gap:"10px",width:"100%",marginBottom:"20px"}}>
+          <div style={{display:"flex",flexDirection:"column",gap:"12px",width:"100%",marginBottom:"24px"}}>
             {history.map((c,i)=>(
               <div key={i} className="h-row" onClick={()=>openDetail(c)}>
-                <Av name={c.prospectName} size={40}/>
+                <Av name={c.prospectName} size={44}/>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontWeight:"600",fontSize:"14px"}}>{c.prospectName}</div>
-                  <div style={{fontSize:"12px",color:"rgba(240,240,245,.4)"}}>{c.catLabel} · {fmtDate(c.date)}</div>
+                  <div style={{fontWeight:"600",fontSize:"15px"}}>{c.prospectName}</div>
+                  <div style={{fontSize:"13px",color:"rgba(240,240,245,.45)"}}>{c.catLabel} · {fmtDate(c.date)}</div>
                 </div>
-                <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"14px"}}>
                   <VBadge verdict={c.verdict}/>
-                  <span style={{fontWeight:"700",color:"#818CF8",fontSize:"15px"}}>{c.overall}/10</span>
+                  <span style={{fontWeight:"800",color:"#818CF8",fontSize:"16px"}}>{c.overall}/10</span>
                 </div>
               </div>
             ))}
           </div>
 
           {!resetConfirm ? (
-            <button className="btn d" onClick={()=>setResetConfirm(true)} style={{width:"100%",padding:"12px",fontSize:"13px"}}>Reset Call History</button>
+            <button className="btn d" onClick={()=>setResetConfirm(true)} style={{width:"100%",maxWidth:"300px",margin:"0 auto",padding:"12px",fontSize:"13px"}}>Reset Call History</button>
           ) : (
-            <div style={{display:"flex",gap:"10px",width:"100%"}}>
+            <div style={{display:"flex",gap:"10px",width:"100%",maxWidth:"300px",margin:"0 auto"}}>
               <button className="btn g" onClick={()=>setResetConfirm(false)} style={{flex:1,padding:"12px"}}>Cancel</button>
               <button className="btn d" onClick={resetHistory} style={{flex:1,padding:"12px"}}>Confirm Reset</button>
             </div>
           )}
         </>
       ) : (
-        <div style={{textAlign:"center",padding:"40px 0",color:"rgba(240,240,245,.3)"}}>No call history yet. Practice some calls first!</div>
+        <div style={{textAlign:"center",padding:"60px 0",color:"rgba(240,240,245,.4)"}}>No call history recorded yet. Practice a call to view stats!</div>
       )}
     </W>
   );
 
-  // ── CALL DETAIL ───────────────────────────────────────────────────────────
+  // ── CALL DETAIL SCREEN ────────────────────────────────────────────────────
   if(screen==="detail"&&detailCall) return (
-    <W>
+    <W maxW="900px">
       <button className="btn g" onClick={()=>setScreen("history")} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← History</button>
       
-      <div style={{marginBottom:"20px",width:"100%"}}>
-        <h2 style={{fontSize:"22px",fontWeight:"700"}}>{detailCall.prospectName}</h2>
-        <div style={{fontSize:"13px",color:"rgba(240,240,245,.4)",marginTop:"2px"}}>{detailCall.catLabel} · {fmtDate(detailCall.date)}</div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"20px",width:"100%"}}>
+        <div>
+          <h2 style={{fontSize:"24px",fontWeight:"700",margin:0}}>{detailCall.prospectName}</h2>
+          <div style={{fontSize:"13px",color:"rgba(240,240,245,.4)",marginTop:"3px"}}>{detailCall.catLabel} · {fmtDate(detailCall.date)}</div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
+          <VBadge verdict={detailCall.verdict}/>
+          <div style={{fontSize:"28px",fontWeight:"800",color:"#818CF8"}}>{detailCall.overall}/10</div>
+        </div>
       </div>
 
-      <Glass style={{padding:"18px",marginBottom:"20px",width:"100%"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"14px"}}>
-          <VBadge verdict={detailCall.verdict}/>
-          <div style={{fontSize:"24px",fontWeight:"800",color:"#818CF8"}}>{detailCall.overall}/10</div>
-        </div>
+      <Glass style={{padding:"20px",marginBottom:"24px",width:"100%"}}>
         {detailCall.coachingTip&&(
-          <div style={{fontSize:"13px",color:"rgba(240,240,245,.7)",lineHeight:1.5}}>
-            <strong style={{color:"#818CF8"}}>Tip:</strong> {detailCall.coachingTip}
+          <div style={{fontSize:"14px",color:"rgba(240,240,245,.8)",lineHeight:1.6}}>
+            <strong style={{color:"#818CF8"}}>Coaching Tip:</strong> {detailCall.coachingTip}
           </div>
         )}
       </Glass>
 
-      <div style={{width:"100%",marginBottom:"20px"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}}>
-          <span style={{fontSize:"12px",fontWeight:"600",color:"rgba(240,240,245,.4)",textTransform:"uppercase"}}>Transcript</span>
-          <button className="btn p" onClick={generateSuggestions} disabled={sugLoading} style={{padding:"6px 12px",fontSize:"12px"}}>
+      <div style={{width:"100%",marginBottom:"24px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}}>
+          <span style={{fontSize:"12px",fontWeight:"700",color:"rgba(240,240,245,.5)",textTransform:"uppercase"}}>Full Conversation & Recommendations</span>
+          <button className="btn p" onClick={generateSuggestions} disabled={sugLoading} style={{padding:"8px 16px",fontSize:"13px"}}>
             {sugLoading?"Generating...":"Best Closer Alternatives"}
           </button>
         </div>
 
-        <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+        <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
           {detailCall.messages?.map((m,i)=>{
             const isP = m.speaker === "prospect";
             const traineeIdx = detailCall.messages.slice(0,i+1).filter(x=>x.speaker==="trainee").length - 1;
             return (
               <div key={i}>
-                <div style={{display:"flex",gap:"8px",alignItems:"flex-start",flexDirection:isP?"row":"row-reverse"}}>
-                  <Av name={isP?detailCall.prospectName:"You"} size={26}/>
-                  <div style={{maxWidth:"80%",background:isP?"rgba(255,255,255,.06)":"rgba(129,140,248,.14)",padding:"8px 12px",borderRadius:"10px",fontSize:"13px",lineHeight:1.5}}>
+                <div style={{display:"flex",gap:"10px",alignItems:"flex-start",flexDirection:isP?"row":"row-reverse"}}>
+                  <Av name={isP?detailCall.prospectName:"You"} size={30}/>
+                  <div style={{maxWidth:"82%",background:isP?"rgba(255,255,255,.06)":"rgba(129,140,248,.16)",padding:"10px 14px",borderRadius:"12px",fontSize:"14px",lineHeight:1.55}}>
                     {m.content}
                   </div>
                 </div>
                 {!isP && suggestions?.[traineeIdx] && (
-                  <div className="sug-box" style={{marginRight:"34px",marginTop:"6px"}}>
-                    <div style={{fontSize:"11px",color:"#22C55E",fontWeight:"600",marginBottom:"2px"}}>Closer Alternative:</div>
-                    <div style={{fontSize:"13px",color:"rgba(240,240,245,.85)"}}>{suggestions[traineeIdx]}</div>
+                  <div className="sug-box" style={{marginRight:"40px",marginTop:"6px"}}>
+                    <div style={{fontSize:"11px",color:"#22C55E",fontWeight:"700",marginBottom:"3px"}}>World-Class Closer Alternative:</div>
+                    <div style={{fontSize:"13px",color:"rgba(240,240,245,.9)"}}>{suggestions[traineeIdx]}</div>
                   </div>
                 )}
               </div>
@@ -1079,30 +1171,30 @@ Return ONLY valid JSON, no markdown:
 
   // ── CUSTOM CATEGORY FORM ──────────────────────────────────────────────────
   if(screen==="customCat") return (
-    <W>
+    <W maxW="600px">
       <button className="btn g" onClick={goHome} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← Cancel</button>
-      <Glass style={{width:"100%",padding:"24px"}}>
-        <h2 style={{fontSize:"20px",fontWeight:"700",marginBottom:"16px"}}>New Product Category</h2>
-        <div className="fl" style={{marginBottom:"14px"}}>
+      <Glass style={{width:"100%",padding:"28px"}}>
+        <h2 style={{fontSize:"22px",fontWeight:"700",marginBottom:"18px"}}>Create Custom Product Category</h2>
+        <div className="fl" style={{marginBottom:"16px"}}>
           <label className="lbl">Product or Service Name</label>
           <input className="txin" value={ccForm.product} onChange={e=>setCcForm({...ccForm,product:e.target.value})} placeholder="e.g. AI Workflow Automation"/>
         </div>
-        <div className="fl" style={{marginBottom:"20px"}}>
+        <div className="fl" style={{marginBottom:"24px"}}>
           <label className="lbl">Target Audience / Persona</label>
           <input className="txin" value={ccForm.target} onChange={e=>setCcForm({...ccForm,target:e.target.value})} placeholder="e.g. VP Operations at Logistics Companies"/>
         </div>
-        <button className="btn p" onClick={handleSubmitCc} disabled={!ccForm.product.trim()} style={{width:"100%",padding:"13px",fontSize:"14px"}}>Create Category</button>
+        <button className="btn p" onClick={handleSubmitCc} disabled={!ccForm.product.trim()} style={{width:"100%",padding:"14px",fontSize:"14px"}}>Create Category</button>
       </Glass>
     </W>
   );
 
   // ── CUSTOM PROSPECT FORM ──────────────────────────────────────────────────
   if(screen==="customProspect") return (
-    <W>
+    <W maxW="700px">
       <button className="btn g" onClick={()=>setScreen("prospects")} style={{alignSelf:"flex-start",padding:"8px 14px",fontSize:"13px",marginBottom:"20px"}}>← Cancel</button>
-      <Glass style={{width:"100%",padding:"24px"}}>
-        <h2 style={{fontSize:"20px",fontWeight:"700",marginBottom:"16px"}}>New Prospect Persona</h2>
-        <div className="cp-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"12px"}}>
+      <Glass style={{width:"100%",padding:"28px"}}>
+        <h2 style={{fontSize:"22px",fontWeight:"700",marginBottom:"18px"}}>Create Custom Prospect Persona</h2>
+        <div className="cp-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px",marginBottom:"14px"}}>
           <div className="fl">
             <label className="lbl">Name</label>
             <input className="txin" value={cpForm.name} onChange={e=>setCpForm({...cpForm,name:e.target.value})} placeholder="e.g. Mark Vance"/>
@@ -1113,7 +1205,7 @@ Return ONLY valid JSON, no markdown:
           </div>
         </div>
 
-        <div className="cp-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",marginBottom:"12px"}}>
+        <div className="cp-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px",marginBottom:"14px"}}>
           <div className="fl">
             <label className="lbl">Difficulty</label>
             <select className="txin" value={cpForm.difficulty} onChange={e=>setCpForm({...cpForm,difficulty:e.target.value})}>
@@ -1131,17 +1223,17 @@ Return ONLY valid JSON, no markdown:
           </div>
         </div>
 
-        <div className="fl" style={{marginBottom:"12px"}}>
+        <div className="fl" style={{marginBottom:"14px"}}>
           <label className="lbl">Main Objection</label>
           <input className="txin" value={cpForm.objection} onChange={e=>setCpForm({...cpForm,objection:e.target.value})} placeholder="e.g. Already locked into a 2-year contract"/>
         </div>
 
-        <div className="fl" style={{marginBottom:"20px"}}>
+        <div className="fl" style={{marginBottom:"24px"}}>
           <label className="lbl">Key Context</label>
           <textarea className="txarea" value={cpForm.context} onChange={e=>setCpForm({...cpForm,context:e.target.value})} placeholder="e.g. Skeptical buyer who only cares about ROI metrics..."/>
         </div>
 
-        <button className="btn p" onClick={handleSubmitCp} disabled={!cpForm.name.trim()||!cpForm.title.trim()} style={{width:"100%",padding:"13px",fontSize:"14px"}}>Start Call with Custom Prospect</button>
+        <button className="btn p" onClick={handleSubmitCp} disabled={!cpForm.name.trim()||!cpForm.title.trim()} style={{width:"100%",padding:"14px",fontSize:"14px"}}>Start Call with Custom Prospect</button>
       </Glass>
     </W>
   );
