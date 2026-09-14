@@ -272,12 +272,12 @@ const css = `
   align-items: center;
   justify-content: center;
   font-family: inherit;
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: 0.03em;
   text-align: center;
-  padding: 40px 120px;
-  min-height: 100px;
+  padding: 24px 64px;
+  min-height: 76px;
   color: #ffffff !important;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95), 0 0 12px rgba(255, 255, 255, 0.2);
   user-select: none;
