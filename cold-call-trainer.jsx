@@ -412,8 +412,8 @@ const css = `
 .h-row:hover{background:rgba(255,255,255,.065)}
 
 @media (min-width: 768px) {
-  .cat-card, .cat-custom-card, .cat-add { padding: 32px 36px; font-size: 18px; }
-  .cat-card h3, .cat-custom-card h3 { font-size: 24px; margin-bottom: 8px; }
+  .cat-card, .cat-custom-card, .cat-add { padding: 24px 28px; font-size: 16px; }
+  .cat-card h3, .cat-custom-card h3 { font-size: 20px; margin-bottom: 6px; }
   .p-row { padding: 24px 28px; font-size: 18px; }
   .p-row h4 { font-size: 22px; margin-bottom: 6px; }
   .h-row { padding: 22px 26px; font-size: 17px; }
