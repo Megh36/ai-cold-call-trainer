@@ -215,7 +215,7 @@ export const PearlButton: React.FC<PearlButtonProps> = ({
       />
 
       <button
-        className={`pearl-button pearl-button-${size} ${className}`}
+        className={`pearl-button pearl-button-${{ small: "sm", medium: "md", large: "lg" }[size as string] || size || "md"} ${className}`}
         disabled={disabled}
         onClick={onClick}
         style={{

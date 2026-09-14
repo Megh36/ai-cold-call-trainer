@@ -208,7 +208,7 @@ export const PearlButton = ({
       />
 
       <button
-        className={`pearl-button pearl-button-${size} ${className}`}
+        className={`pearl-button pearl-button-${{ small: "sm", medium: "md", large: "lg" }[size] || size || "md"} ${className}`}
         disabled={disabled}
         onClick={onClick}
         style={{
