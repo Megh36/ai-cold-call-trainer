@@ -96,29 +96,29 @@ export const PearlButton = ({
           justify-content: center;
         }
 
-        /* Enormous Extra Padding on all sides & Larger Ultra-Clear Font Sizes (Extra Left Padding) */
+        /* Enormous Extra Padding on all sides & Perfectly Centered Text */
         .pearl-button-sm {
-          min-height: 62px;
+          min-height: 70px;
         }
         .pearl-button-sm .wrap {
           font-size: 18px;
-          padding: 20px 48px 20px 68px;
+          padding: 24px 64px;
         }
 
         .pearl-button-md {
-          min-height: 78px;
+          min-height: 88px;
         }
         .pearl-button-md .wrap {
           font-size: 22px;
-          padding: 28px 72px 28px 100px;
+          padding: 32px 96px;
         }
 
         .pearl-button-lg {
-          min-height: 94px;
+          min-height: 106px;
         }
         .pearl-button-lg .wrap {
           font-size: 26px;
-          padding: 36px 96px 36px 132px;
+          padding: 40px 128px;
         }
 
         .pearl-button .wrap p span:nth-child(2) {
@@ -136,13 +136,14 @@ export const PearlButton = ({
           display: inline-flex;
           align-items: center;
           justify-content: center;
+          text-align: center;
+          width: 100%;
           gap: 14px;
-          margin: 0;
+          margin: 0 auto;
           font-weight: 800;
           color: #ffffff !important;
           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95), 0 0 12px rgba(255, 255, 255, 0.2);
           transition: all 0.2s ease;
-          transform: translateY(1%);
         }
 
         .pearl-button .wrap::before,
