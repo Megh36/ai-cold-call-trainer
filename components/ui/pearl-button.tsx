@@ -128,13 +128,13 @@ export const PearlButton: React.FC<PearlButtonProps> = ({
           padding: 40px 128px;
         }
 
-        .pearl-button .wrap p span:nth-child(2) {
+        .pearl-button .sparkle-2 {
           display: none;
         }
-        .pearl-button:hover:not(:disabled) .wrap p span:nth-child(1) {
+        .pearl-button:hover:not(:disabled) .sparkle-1 {
           display: none;
         }
-        .pearl-button:hover:not(:disabled) .wrap p span:nth-child(2) {
+        .pearl-button:hover:not(:disabled) .sparkle-2 {
           display: inline-block;
         }
         .pearl-button .wrap p {
@@ -145,7 +145,6 @@ export const PearlButton: React.FC<PearlButtonProps> = ({
           justify-content: center;
           text-align: center;
           width: 100%;
-          gap: 14px;
           margin: 0 auto;
           font-weight: 800;
           color: #ffffff !important;
@@ -231,10 +230,12 @@ export const PearlButton: React.FC<PearlButtonProps> = ({
       >
         <div className="wrap">
           <p>
-            <span style={{ color: v.accentColor, fontSize: "1.05em" }}>✧</span>
-            <span style={{ color: v.accentColor, fontSize: "1.05em" }}>✦</span>
-            {icon && <span style={{ display: "inline-flex", marginRight: "4px" }}>{icon}</span>}
-            {contentText}
+            <span style={{ position: "absolute", right: "100%", marginRight: "12px", display: "inline-flex", alignItems: "center" }}>
+              <span className="sparkle-1" style={{ color: v.accentColor, fontSize: "1.05em" }}>✧</span>
+              <span className="sparkle-2" style={{ color: v.accentColor, fontSize: "1.05em" }}>✦</span>
+              {icon && <span style={{ display: "inline-flex", marginLeft: "6px" }}>{icon}</span>}
+            </span>
+            <span>{contentText}</span>
           </p>
         </div>
       </button>
