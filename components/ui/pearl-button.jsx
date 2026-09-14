@@ -49,7 +49,9 @@ export const PearlButton = ({
 
   return (
     <>
-      <style>{`
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .pearl-button {
           --radius: 100px;
           outline: none;
@@ -201,7 +203,9 @@ export const PearlButton = ({
             inset 0 -0.3rem 0.7rem var(--btn-glow, rgba(129, 140, 248, 0.4)),
             0 0.4rem 0.8rem rgba(0, 0, 0, 0.4);
         }
-      `}</style>
+      `,
+        }}
+      />
 
       <button
         className={`pearl-button pearl-button-${size} ${className}`}

@@ -564,7 +564,7 @@ function Glass({children,padding="26px",style={}}) {
 function W({children,maxW="1100px"}) {
   return (
     <div style={{minHeight:"100vh",background:BG,color:"#F0F0F5",fontFamily:FONT,display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 24px 56px"}}>
-      <style>{css}</style>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
       <div style={{width:"100%",maxWidth:maxW}}>{children}</div>
     </div>
   );
@@ -991,7 +991,7 @@ Return ONLY valid JSON, no markdown:
   // ── CALL SCREEN ───────────────────────────────────────────────────────────
   if(screen==="call") return (
     <>
-      <style>{css}</style>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
       <div style={{minHeight:"100vh",background:BG,color:"#F0F0F5",fontFamily:FONT,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"12px"}}>
         <div className="call-wrap">
           
